@@ -1,0 +1,31 @@
+# Containerfile for fedora-43 cloud-gce
+FROM quay.io/fedora/fedora-bootc:43
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+    "@cloud-server-environment" \
+    "btrfs-progs" \
+    "glibc-langpack-en" \
+    "python3-dnf-plugin-tracer" \
+    "google-compute-engine-guest-configs" \
+    "google-compute-engine-oslogin" \
+    "google-guest-agent" \ \
+    --exclude="cloud-init" \
+    --exclude="*-firmware" \
+    --exclude="dracut-config-rescue" \
+    --exclude="firewalld" \
+    --exclude="fwupd" \
+    --exclude="geolite2-city" \
+    --exclude="geolite2-country" \
+    --exclude="plymouth" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN cat << 'EOF' > "/etc/kernel/cmdline"
+no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off
+EOF
+
+
+COPY $CONTAINERFILE /root/Containerfile

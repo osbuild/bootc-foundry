@@ -1,0 +1,36 @@
+# Containerfile for fedora-43 cloud-azure
+FROM quay.io/fedora/fedora-bootc:43
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+    "@cloud-server-environment" \
+    "btrfs-progs" \
+    "glibc-langpack-en" \
+    "python3-dnf-plugin-tracer" \
+    "WALinuxAgent" \
+    "azure-vm-utils" \
+    "hyperv-daemons" \
+    "kernel-modules" \
+    --exclude="*-firmware" \
+    --exclude="dracut-config-rescue" \
+    --exclude="firewalld" \
+    --exclude="fwupd" \
+    --exclude="geolite2-city" \
+    --exclude="geolite2-country" \
+    --exclude="plymouth" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN cat << 'EOF' > "/etc/kernel/cmdline"
+no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off
+EOF
+
+RUN systemctl enable \
+    "cloud-init-network.service" \
+    "cloud-config.service" \
+    "cloud-init-local.service" \
+    "cloud-final.service"
+
+COPY $CONTAINERFILE /root/Containerfile
