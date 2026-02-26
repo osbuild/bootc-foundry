@@ -30,13 +30,28 @@ jobs:
         include:
           - containerfile: Containerfile.fedora-43-qcow2
             tag: 43-qcow2
+            arch: x86_64
+          - containerfile: Containerfile.fedora-43-qcow2
+            tag: 43-qcow2
+            arch: aarch64
           - containerfile: Containerfile.fedora-43-gce
             tag: 43-gce
+            arch: x86_64
+          - containerfile: Containerfile.fedora-43-gce
+            tag: 43-gce
+            arch: aarch64
           - containerfile: Containerfile.fedora-43-azure
             tag: 43-azure
+            arch: x86_64
+          - containerfile: Containerfile.fedora-43-azure
+            tag: 43-azure
+            arch: aarch64
           - containerfile: Containerfile.fedora-43-ec2
             tag: 43-ec2
-        arch: [x86_64, aarch64]
+            arch: x86_64
+          - containerfile: Containerfile.fedora-43-ec2
+            tag: 43-ec2
+            arch: aarch64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,11 +80,41 @@ jobs:
           buildah push "$IMAGE"
           buildah push "$IMAGE" "$CACHE_IMAGE"
 
+      - name: Write matrix info
+        run: |
+          mkdir -p matrix-info
+          echo "${{ matrix.tag }}" > matrix-info/tag
+          echo "${{ matrix.arch }}" > matrix-info/arch
+
+      - name: Upload matrix info
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-${{ matrix.tag }}-${{ matrix.arch }}
+          path: matrix-info
+
   fedora-manifest:
     name: fedora-manifest
     runs-on: ubuntu-latest
     needs: fedora-build
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download matrix info
+        uses: actions/download-artifact@v4
+        with:
+          pattern: matrix-*
+          path: matrix-artifacts
+          merge-multiple: false
+
+      - name: Collect tags and arches
+        id: matrix
+        run: |
+          TAGS=$(find matrix-artifacts -name tag -exec cat {} \; | sort -u | tr '\n' ' ')
+          ARCHES=$(find matrix-artifacts -name arch -exec cat {} \; | sort -u | tr '\n' ' ')
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "arches=$ARCHES" >> "$GITHUB_OUTPUT"
+
       - name: Login to registries
         uses: ./.github/actions/login-registry
         with:
@@ -82,12 +127,14 @@ jobs:
         env:
           REPO_URL: ${{ env.REPO_URL }}
           CACHE_URL: ${{ env.CACHE_URL }}
+          TAGS: ${{ steps.matrix.outputs.tags }}
+          ARCHES: ${{ steps.matrix.outputs.arches }}
         run: |
-          for tag in 43-qcow2 43-gce 43-azure 43-ec2; do
+          for tag in $TAGS; do
             echo "Creating manifest for $tag"
             buildah manifest rm "$REPO_URL:$tag" 2>/dev/null || true
             buildah manifest create "$REPO_URL:$tag"
-            for arch in x86_64 aarch64; do
+            for arch in $ARCHES; do
               buildah manifest add "$REPO_URL:$tag" "docker://$CACHE_URL:$tag-$arch"
             done
             buildah manifest push --all "$REPO_URL:$tag" "docker://$REPO_URL:$tag"
