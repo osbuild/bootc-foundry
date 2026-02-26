@@ -12,7 +12,7 @@ are used by image builder.
 
 ## Supported bootable containers
 
-* `quay.io/fedora/fedora-bootc` (x86_64, aarch64)
+* `quay.io/fedora/fedora-bootc` (`x86_64`, `aarch64`)
 
 ## Building Containerfiles
 
@@ -25,7 +25,14 @@ Push the changes into this repository, GitHub Actions will build and publish new
 versions of container images. Daily rebuild is scheduled for every morning
 (CET).
 
-* Fedora 43: [![Fedora](https://quay.io/repository/osbuild/fedora-bootc/status "Fedora")](https://quay.io/repository/osbuild/fedora-bootc)
+## Available images
+
+Fedora (`x86_64`, `aarch64`)
+
+* `quay.io/osbuild/fedora-bootc:43-ec2`
+* `quay.io/osbuild/fedora-bootc:43-azure`
+* `quay.io/osbuild/fedora-bootc:43-gce`
+* `quay.io/osbuild/fedora-bootc:43-qcow2`
 
 ## TODO
 
