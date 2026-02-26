@@ -1,0 +1,30 @@
+# Log in to the container registry for buildah push/manifest.
+# Requires buildah to be installed in the job.
+name: Login to container registry
+description: Logs in to the registry (e.g. quay.io) using REPO_USERNAME and REPO_PASSWORD.
+inputs:
+  repo_url:
+    description: Full repo URL (e.g. quay.io/osbuild/fedora-bootc); host is used for login
+    required: true
+  username:
+    description: Registry username (e.g. from secrets.REPO_USERNAME)
+    required: false
+  password:
+    description: Registry password (e.g. from secrets.REPO_PASSWORD)
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Login to container registry
+      shell: bash
+      env:
+        REPO_URL: ${{ inputs.repo_url }}
+        REPO_USERNAME: ${{ inputs.username }}
+        REPO_PASSWORD: ${{ inputs.password }}
+      run: |
+        if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
+          REGISTRY="${REPO_URL%%/*}"
+          echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin "$REGISTRY"
+        else
+          echo "No registry credentials; push may fail"
+        fi

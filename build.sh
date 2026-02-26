@@ -11,15 +11,15 @@ BUILDAH=${BUILDAH:-buildah --storage-driver=vfs}
 TOKEN=/workspace/source/token.txt
 
 if test -f "$TOKEN"; then
-	cat "$TOKEN" | $BUILDAH login -u "REPO_USERNAME" --password-stdin "$REPO_URL"
-elif test -n "$REPO_USERNAME" && test -n "REPO_PASSWORD"; then
-	$BUILDAH login -u "REPO_USERNAME" -p "$REPO_PASSWORD"
+	cat "$TOKEN" | $BUILDAH login -u "$REPO_USERNAME" --password-stdin "$REPO_URL"
+elif test -n "$REPO_USERNAME" && test -n "$REPO_PASSWORD"; then
+	$BUILDAH login -u "$REPO_USERNAME" -p "$REPO_PASSWORD"
 else
 	echo "No token or password provided, push will likely fail"
 fi
 
 # Fedora images
-for cf in $(find . -name "Containerfile.fedora-[0-9][0-9]-qcow2" -not -name "*.tmpl"); do
+for cf in $(find . -name "Containerfile.fedora-[0-9][0-9]-*" -not -name "*.tmpl"); do
     URL=${REPO_URL:-quay.io/osbuild/fedora-bootc}
     TAG=$(basename "$cf" | sed 's/^Containerfile\.fedora-//')
     $BUILDAH rmi "$URL:$TAG" 2>/dev/null || true
