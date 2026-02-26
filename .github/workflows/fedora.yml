@@ -24,13 +24,13 @@ jobs:
       matrix:
         include:
           - containerfile: Containerfile.fedora-43-qcow2
-            tag: fedora-43-qcow2
+            tag: 43-qcow2
           - containerfile: Containerfile.fedora-43-gce
-            tag: fedora-43-gce
+            tag: 43-gce
           - containerfile: Containerfile.fedora-43-azure
-            tag: fedora-43-azure
+            tag: 43-azure
           - containerfile: Containerfile.fedora-43-ec2
-            tag: fedora-43-ec2
+            tag: 43-ec2
         arch: [x86_64, aarch64]
     steps:
       - name: Checkout

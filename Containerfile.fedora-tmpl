@@ -41,9 +41,7 @@ RUN dnf install -y --skip-unavailable \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
-RUN cat << 'EOF' > "/etc/kernel/cmdline"
-no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off
-EOF
+RUN echo 'no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off' > /etc/kernel/cmdline
 {{if or (eq .ImageType "cloud-ec2") (eq .ImageType "cloud-azure") (eq .ImageType "cloud-qcow2")}}
 RUN systemctl enable \
 {{- if ge .Version "43"}}
