@@ -1,8 +1,3 @@
-# Build Fedora 43 bootc container images for multiple clouds and architectures.
-# Runs 8 build jobs in parallel (4 containerfiles × 2 arches) on native runners,
-# then a single manifest job to publish multi-arch images. Uses ghcr.io as
-# a shared registry cache across all jobs.
-
 name: Build Fedora
 
 on:
@@ -11,6 +6,8 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '13 4 * * *'
 
 permissions:
   contents: read
