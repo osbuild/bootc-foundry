@@ -1,30 +1,46 @@
-# Log in to the container registry for buildah push/manifest.
-# Requires buildah to be installed in the job.
-name: Login to container registry
-description: Logs in to the registry (e.g. quay.io) using REPO_USERNAME and REPO_PASSWORD.
+# Install Buildah and log in to the container registry.
+# Use in jobs that build or push container images.
+name: Setup Buildah and login to registry
+description: Installs Buildah (apt-get) then logs in to quay.io and optionally ghcr.io (cache).
 inputs:
-  repo_url:
-    description: Full repo URL (e.g. quay.io/osbuild/fedora-bootc); host is used for login
-    required: true
   username:
     description: Registry username (e.g. from secrets.REPO_USERNAME)
     required: false
   password:
     description: Registry password (e.g. from secrets.REPO_PASSWORD)
     required: false
+  cache_username:
+    description: Username for cache registry (e.g. ghcr.io); set with password to enable cache login
+    required: false
+  cache_password:
+    description: Password for cache registry (e.g. secrets.GITHUB_TOKEN)
+    required: false
 runs:
   using: composite
   steps:
+    - name: Install Buildah
+      shell: bash
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install -y buildah
+
     - name: Login to container registry
       shell: bash
       env:
-        REPO_URL: ${{ inputs.repo_url }}
         REPO_USERNAME: ${{ inputs.username }}
         REPO_PASSWORD: ${{ inputs.password }}
       run: |
         if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
-          REGISTRY="${REPO_URL%%/*}"
-          echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin "$REGISTRY"
+          echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
         else
           echo "No registry credentials; push may fail"
         fi
+
+    - name: Login to ghcr.io
+      shell: bash
+      if: inputs.cache_username != '' && inputs.cache_password != ''
+      env:
+        CACHE_USERNAME: ${{ inputs.cache_username }}
+        CACHE_PASSWORD: ${{ inputs.cache_password }}
+      run: |
+        echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io

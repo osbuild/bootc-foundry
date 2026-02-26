@@ -1,7 +1,7 @@
 # Build Fedora 43 bootc container images for multiple clouds and architectures.
 # Runs 8 build jobs in parallel (4 containerfiles × 2 arches) on native runners,
-# then a single manifest job to publish multi-arch images. Uses cache for
-# buildah layers to speed up repeated runs.
+# then a single manifest job to publish multi-arch images. Uses ghcr.io as
+# a shared registry cache across all jobs.
 
 name: Build Fedora
 
@@ -12,8 +12,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   REPO_URL: quay.io/osbuild/fedora-bootc
+  CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
   fedora-build:
@@ -36,76 +41,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Buildah
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install -y buildah
-
-      - name: Cache buildah storage
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.local/share/containers
-          key: fedora-buildah-vfs-${{ matrix.arch }}-${{ matrix.tag }}-${{ hashFiles(matrix.containerfile) }}
-          restore-keys: |
-            fedora-buildah-vfs-${{ matrix.arch }}-${{ matrix.tag }}-
-
-      - name: Login to container registry
+      - name: Login to registries
         uses: ./.github/actions/login-registry
         with:
-          repo_url: ${{ env.REPO_URL }}
           username: ${{ secrets.REPO_USERNAME }}
           password: ${{ secrets.REPO_PASSWORD }}
+          cache_username: ${{ github.actor }}
+          cache_password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         env:
           REPO_URL: ${{ env.REPO_URL }}
+          CACHE_URL: ${{ env.CACHE_URL }}
         run: |
-          BUILDAH=${BUILDAH:-buildah --storage-driver=vfs}
           IMAGE="$REPO_URL:${{ matrix.tag }}-${{ matrix.arch }}"
-          $BUILDAH rmi "$IMAGE" 2>/dev/null || true
-          $BUILDAH build --arch=${{ matrix.arch }} \
+          CACHE_IMAGE="$CACHE_URL:${{ matrix.tag }}-${{ matrix.arch }}"
+          buildah pull "$CACHE_IMAGE" 2>/dev/null || true
+          buildah rmi "$IMAGE" 2>/dev/null || true
+          buildah build --layers --arch=${{ matrix.arch }} \
             --build-arg CONTAINERFILE="${{ matrix.containerfile }}" \
             -f "${{ matrix.containerfile }}" \
             -t "$IMAGE" .
-          $BUILDAH push "$IMAGE"
+          buildah push "$IMAGE"
+          buildah push "$IMAGE" "$CACHE_IMAGE"
 
   fedora-manifest:
     name: fedora-manifest
     runs-on: ubuntu-latest
     needs: fedora-build
     steps:
-      - name: Install Buildah
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install -y buildah
-
-      - name: Cache buildah storage
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.local/share/containers
-          key: fedora-buildah-manifest-${{ env.REPO_URL }}
-          restore-keys: |
-            fedora-buildah-manifest-
-
-      - name: Login to container registry
+      - name: Login to registries
         uses: ./.github/actions/login-registry
         with:
-          repo_url: ${{ env.REPO_URL }}
           username: ${{ secrets.REPO_USERNAME }}
           password: ${{ secrets.REPO_PASSWORD }}
+          cache_username: ${{ github.actor }}
+          cache_password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and push multi-arch manifests
         env:
           REPO_URL: ${{ env.REPO_URL }}
+          CACHE_URL: ${{ env.CACHE_URL }}
         run: |
-          BUILDAH=${BUILDAH:-buildah --storage-driver=vfs}
-          for tag in fedora-43-qcow2 fedora-43-gce fedora-43-azure fedora-43-ec2; do
+          for tag in 43-qcow2 43-gce 43-azure 43-ec2; do
             echo "Creating manifest for $tag"
-            $BUILDAH manifest rm "$REPO_URL:$tag" 2>/dev/null || true
-            $BUILDAH manifest create "$REPO_URL:$tag"
+            buildah manifest rm "$REPO_URL:$tag" 2>/dev/null || true
+            buildah manifest create "$REPO_URL:$tag"
             for arch in x86_64 aarch64; do
-              $BUILDAH manifest add "$REPO_URL:$tag" "docker://$REPO_URL:$tag-$arch"
+              buildah manifest add "$REPO_URL:$tag" "docker://$CACHE_URL:$tag-$arch"
             done
-            $BUILDAH manifest push --all "$REPO_URL:$tag" "docker://$REPO_URL:$tag"
+            buildah manifest push --all "$REPO_URL:$tag" "docker://$REPO_URL:$tag"
           done
