@@ -25,28 +25,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - containerfile: Containerfile.fedora-43-qcow2
+          - containerfile: Containerfile.f43-qcow2
             tag: 43-qcow2
             arch: x86_64
-          - containerfile: Containerfile.fedora-43-qcow2
+          - containerfile: Containerfile.f43-qcow2
             tag: 43-qcow2
             arch: aarch64
-          - containerfile: Containerfile.fedora-43-gce
+          - containerfile: Containerfile.f43-gce
             tag: 43-gce
             arch: x86_64
-          - containerfile: Containerfile.fedora-43-gce
+          - containerfile: Containerfile.f43-gce
             tag: 43-gce
             arch: aarch64
-          - containerfile: Containerfile.fedora-43-azure
+          - containerfile: Containerfile.f43-azure
             tag: 43-azure
             arch: x86_64
-          - containerfile: Containerfile.fedora-43-azure
+          - containerfile: Containerfile.f43-azure
             tag: 43-azure
             arch: aarch64
-          - containerfile: Containerfile.fedora-43-ec2
+          - containerfile: Containerfile.f43-ec2
             tag: 43-ec2
             arch: x86_64
-          - containerfile: Containerfile.fedora-43-ec2
+          - containerfile: Containerfile.f43-ec2
             tag: 43-ec2
             arch: aarch64
     steps:

@@ -17,7 +17,7 @@ type Data struct {
 }
 
 func main() {
-	tmplPath := flag.String("template", "Containerfile.fedora-tmpl", "Path to template file")
+	tmplPath := flag.String("template", "Containerfile.f-tmpl", "Path to template file")
 	distro := flag.String("distro", "fedora", "Distribution (e.g. fedora)")
 	version := flag.String("version", "43", "Version (e.g. 43)")
 	imageType := flag.String("type", "", "Image type (cloud-ec2, cloud-azure, cloud-gce, cloud-qcow2)")
