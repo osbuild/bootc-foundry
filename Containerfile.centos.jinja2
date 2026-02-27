@@ -1,0 +1,198 @@
+# Containerfile for {{ distro }}-{{ version }} {{ image_type }}
+FROM {{ base_image }}
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+{% if image_type == "ec2" %}
+	"@core" \
+	"NetworkManager-cloud-setup" \
+	"authselect-compat" \
+	"chrony" \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"dhcp-client" \
+	"dracut-config-generic" \
+	"gdisk" \
+	"langpacks-en" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"rsync" \
+	"system-reinstall-bootc" \
+	"tar" \
+	"tuned" \
+	"yum-utils" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="dracut-config-rescue" \
+	--exclude="firewalld" \
+	--exclude="iprutils" \
+	--exclude="plymouth" \
+	--exclude="qemu-guest-agent"
+{% endif %}
+{% if image_type == "azure" %}
+    "@Server" \
+    "NetworkManager" \
+    "NetworkManager-cloud-setup" \
+    "WALinuxAgent" \
+    "azure-vm-utils" \
+    "bzip2" \
+    "cloud-init" \
+    "cloud-utils-growpart" \
+    "efibootmgr" \
+    "gdisk" \
+    "hyperv-daemons" \
+    "langpacks-en" \
+    "lvm2" \
+    "nvme-cli" \
+    "patch" \
+    "rng-tools" \
+    "rsync" \
+    "selinux-policy-targeted" \
+    "system-reinstall-bootc" \
+    "uuid" \
+    "yum-utils" \
+    --exclude="NetworkManager-config-server" \
+    --exclude="alsa-lib" \
+    --exclude="biosdevname" \
+    --exclude="bolt" \
+    --exclude="buildah" \
+    --exclude="cockpit-podman" \
+    --exclude="containernetworking-plugins" \
+    --exclude="dnf-plugin-spacewalk" \
+    --exclude="dracut-config-rescue" \
+    --exclude="glibc-all-langpacks" \
+    --exclude="initscripts-rename-device" \
+    --exclude="iprutils" \
+    --exclude="microcode_ctl" \
+    --exclude="plymouth" \
+    --exclude="podman" \
+    --exclude="python3-dnf-plugin-spacewalk" \
+    --exclude="python3-hwdata" \
+    --exclude="python3-rhnlib" \
+    --exclude="rhn-check" \
+    --exclude="rhn-client-tools" \
+    --exclude="rhn-setup" \
+    --exclude="rhnlib" \
+    --exclude="rhnsd" \
+    --exclude="usb_modeswitch"
+{% endif %}
+{% if image_type == "gce" %}
+	"@core" \
+	"acpid" \
+	"chrony" \
+	"dhcp-client" \
+	"dnf-automatic" \
+	"gce-disk-expand" \
+	"google-compute-engine" \
+	"google-osconfig-agent" \
+	"grub2-tools" \
+	"grub2-tools-minimal" \
+	"langpacks-en" \
+	"net-tools" \
+	"python3" \
+	"rng-tools" \
+	"tar" \
+	"timedatex" \
+	"tuned" \
+	"vim" \
+	--exclude="alsa-utils" \
+	--exclude="b43-fwcutter" \
+	--exclude="b43-openfwwf" \
+	--exclude="dmraid" \
+	--exclude="dracut-config-rescue" \
+	--exclude="eject" \
+	--exclude="gpm" \
+	--exclude="irqbalance" \
+	--exclude="microcode_ctl" \
+	--exclude="qemu-guest-agent" \
+	--exclude="smartmontools" \
+{% endif %}
+{% if image_type == "qcow2" %}
+	"@core" \
+	"authselect-compat" \
+	"chrony" \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"cockpit-system" \
+	"cockpit-ws" \
+	"dnf-utils" \
+	"dosfstools" \
+	"nfs-utils" \
+	"oddjob" \
+	"oddjob-mkhomedir" \
+	"psmisc" \
+	"python3-jsonschema" \
+	"qemu-guest-agent" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"rsync" \
+	"tar" \
+	"tcpdump" \
+	"tuned" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="dnf-plugin-spacewalk" \
+	--exclude="dracut-config-rescue" \
+	--exclude="fedora-release" \
+	--exclude="fedora-repos" \
+	--exclude="firewalld" \
+	--exclude="iprutils" \
+	--exclude="langpacks-*" \
+	--exclude="langpacks-en" \
+	--exclude="nss" \
+	--exclude="plymouth" \
+	--exclude="rng-tools" \
+	--exclude="udisks2"
+{% endif %}
+    --exclude="*-firmware" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+{% if image_type == "ec2" %}
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-ec2.toml
+{% endif %}
+{% if image_type == "azure" %}
+RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-azure.toml
+{% endif %}
+{% if image_type == "gce" %}
+RUN echo 'kargs = ["net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-gce.toml
+{% endif %}
+{% if image_type == "qcow2" %}
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml
+{% endif %}
+
+{% if image_type == "ec2" %}
+RUN systemctl enable \
+    "NetworkManager" \
+    "cloud-config" \
+    "cloud-final" \
+    "cloud-init" \
+    "cloud-init-local" \
+    "nm-cloud-setup.service" \
+    "nm-cloud-setup.timer" \
+    "reboot.target" \
+    "sshd" \
+    "tuned"
+{% endif %}
+{% if image_type == "azure" %}
+RUN systemctl enable \
+    "firewalld" \
+    "nm-cloud-setup.service" \
+    "nm-cloud-setup.timer" \
+    "sshd" \
+    "waagent"
+{% endif %}
+{% if image_type == "gce" %}
+RUN systemctl enable \
+    "dnf-automatic.timer" \
+    "rngd" \
+    "sshd" && \
+    systemctl disable "reboot.target" "sshd-keygen@"
+{% endif %}
+{% if image_type == "qcow2" %}
+# XXX: no services to enable
+{% endif %}
+
+COPY $CONTAINERFILE /root/Containerfile
