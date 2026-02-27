@@ -5,31 +5,30 @@ ARG TARGETARCH
 ARG CONTAINERFILE
 
 RUN dnf install -y --skip-unavailable \
-{% if image_type == "ec2" %}
-	"@core" \
-	"NetworkManager-cloud-setup" \
-	"authselect-compat" \
-	"chrony" \
+{% if image_type in ["ec2", "azure", "qcow2"] %}
 	"cloud-init" \
 	"cloud-utils-growpart" \
+	"rsync" \
+{% endif %}
+{% if image_type in ["ec2", "gce", "qcow2"] %}
+	"@core" \
+	"chrony" \
+	"tar" \
+	"tuned" \
+{% endif %}
+{% if image_type == "ec2" %}
+	"NetworkManager-cloud-setup" \
+	"authselect-compat" \
 	"dhcp-client" \
 	"dracut-config-generic" \
 	"gdisk" \
 	"langpacks-en" \
 	"redhat-release" \
 	"redhat-release-eula" \
-	"rsync" \
 	"system-reinstall-bootc" \
-	"tar" \
-	"tuned" \
 	"yum-utils" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="dracut-config-rescue" \
 	--exclude="firewalld" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="qemu-guest-agent"
+	--exclude="qemu-guest-agent" \
 {% endif %}
 {% if image_type == "azure" %}
     "@Server" \
@@ -38,8 +37,6 @@ RUN dnf install -y --skip-unavailable \
     "WALinuxAgent" \
     "azure-vm-utils" \
     "bzip2" \
-    "cloud-init" \
-    "cloud-utils-growpart" \
     "efibootmgr" \
     "gdisk" \
     "hyperv-daemons" \
@@ -48,25 +45,19 @@ RUN dnf install -y --skip-unavailable \
     "nvme-cli" \
     "patch" \
     "rng-tools" \
-    "rsync" \
     "selinux-policy-targeted" \
     "system-reinstall-bootc" \
     "uuid" \
     "yum-utils" \
     --exclude="NetworkManager-config-server" \
-    --exclude="alsa-lib" \
-    --exclude="biosdevname" \
     --exclude="bolt" \
     --exclude="buildah" \
     --exclude="cockpit-podman" \
     --exclude="containernetworking-plugins" \
     --exclude="dnf-plugin-spacewalk" \
-    --exclude="dracut-config-rescue" \
     --exclude="glibc-all-langpacks" \
     --exclude="initscripts-rename-device" \
-    --exclude="iprutils" \
     --exclude="microcode_ctl" \
-    --exclude="plymouth" \
     --exclude="podman" \
     --exclude="python3-dnf-plugin-spacewalk" \
     --exclude="python3-hwdata" \
@@ -76,12 +67,10 @@ RUN dnf install -y --skip-unavailable \
     --exclude="rhn-setup" \
     --exclude="rhnlib" \
     --exclude="rhnsd" \
-    --exclude="usb_modeswitch"
+    --exclude="usb_modeswitch" \
 {% endif %}
 {% if image_type == "gce" %}
-	"@core" \
 	"acpid" \
-	"chrony" \
 	"dhcp-client" \
 	"dnf-automatic" \
 	"gce-disk-expand" \
@@ -93,15 +82,12 @@ RUN dnf install -y --skip-unavailable \
 	"net-tools" \
 	"python3" \
 	"rng-tools" \
-	"tar" \
 	"timedatex" \
-	"tuned" \
 	"vim" \
 	--exclude="alsa-utils" \
 	--exclude="b43-fwcutter" \
 	--exclude="b43-openfwwf" \
 	--exclude="dmraid" \
-	--exclude="dracut-config-rescue" \
 	--exclude="eject" \
 	--exclude="gpm" \
 	--exclude="irqbalance" \
@@ -110,11 +96,7 @@ RUN dnf install -y --skip-unavailable \
 	--exclude="smartmontools" \
 {% endif %}
 {% if image_type == "qcow2" %}
-	"@core" \
 	"authselect-compat" \
-	"chrony" \
-	"cloud-init" \
-	"cloud-utils-growpart" \
 	"cockpit-system" \
 	"cockpit-ws" \
 	"dnf-utils" \
@@ -127,24 +109,25 @@ RUN dnf install -y --skip-unavailable \
 	"qemu-guest-agent" \
 	"redhat-release" \
 	"redhat-release-eula" \
-	"rsync" \
-	"tar" \
 	"tcpdump" \
-	"tuned" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
 	--exclude="dnf-plugin-spacewalk" \
-	--exclude="dracut-config-rescue" \
 	--exclude="fedora-release" \
 	--exclude="fedora-repos" \
 	--exclude="firewalld" \
-	--exclude="iprutils" \
 	--exclude="langpacks-*" \
 	--exclude="langpacks-en" \
 	--exclude="nss" \
-	--exclude="plymouth" \
 	--exclude="rng-tools" \
-	--exclude="udisks2"
+	--exclude="udisks2" \
+{% endif %}
+{% if image_type in ["ec2", "azure", "gce", "qcow2"] %}
+	--exclude="dracut-config-rescue" \
+{% endif %}
+{% if image_type in ["ec2", "azure", "qcow2"] %}
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="iprutils" \
+	--exclude="plymouth" \
 {% endif %}
     --exclude="*-firmware" && \
     dnf clean all && \
@@ -192,7 +175,7 @@ RUN systemctl enable \
     systemctl disable "reboot.target" "sshd-keygen@"
 {% endif %}
 {% if image_type == "qcow2" %}
-# XXX: no services to enable
+# XXX: https://gitlab.com/redhat/centos-stream/rpms/centos-stream-release/-/blob/c10s/90-default.preset?ref_type=heads#L460-465
 {% endif %}
 
 COPY $CONTAINERFILE /root/Containerfile
