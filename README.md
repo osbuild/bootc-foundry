@@ -28,6 +28,9 @@ Push the changes into this repository, GitHub Actions will build and publish new
 versions of container images. Daily rebuild is scheduled for every morning
 (CET).
 
+GitHub Actions use `ghcr.io` as a cache registry to speed up builds do base
+images does not need to be pulled from `quay.io` everytime.
+
 ## Available images
 
 Fedora (`x86_64`, `aarch64`)
