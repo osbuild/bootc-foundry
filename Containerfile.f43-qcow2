@@ -10,13 +10,13 @@ RUN dnf install -y --skip-unavailable \
     "glibc-langpack-en" \
     "python3-dnf-plugin-tracer" \
     "qemu-guest-agent" \
-    --exclude="*-firmware" \
     --exclude="dracut-config-rescue" \
     --exclude="firewalld" \
     --exclude="fwupd" \
     --exclude="geolite2-city" \
     --exclude="geolite2-country" \
-    --exclude="plymouth" && \
+    --exclude="plymouth" \
+    --exclude="*-firmware" && \
     dnf clean all && \
     rm -rf /var/cache/dnf
 

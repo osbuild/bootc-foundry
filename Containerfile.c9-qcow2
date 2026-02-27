@@ -1,0 +1,51 @@
+# Containerfile for centos-9 qcow2
+FROM quay.io/centos-bootc/centos-bootc:stream9
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"rsync" \
+	"@core" \
+	"chrony" \
+	"tar" \
+	"tuned" \
+	"authselect-compat" \
+	"cockpit-system" \
+	"cockpit-ws" \
+	"dnf-utils" \
+	"dosfstools" \
+	"nfs-utils" \
+	"oddjob" \
+	"oddjob-mkhomedir" \
+	"psmisc" \
+	"python3-jsonschema" \
+	"qemu-guest-agent" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"tcpdump" \
+	--exclude="dnf-plugin-spacewalk" \
+	--exclude="fedora-release" \
+	--exclude="fedora-repos" \
+	--exclude="firewalld" \
+	--exclude="langpacks-*" \
+	--exclude="langpacks-en" \
+	--exclude="nss" \
+	--exclude="rng-tools" \
+	--exclude="udisks2" \
+	--exclude="dracut-config-rescue" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="iprutils" \
+	--exclude="plymouth" \
+    --exclude="*-firmware" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml
+
+# XXX: https://gitlab.com/redhat/centos-stream/rpms/centos-stream-release/-/blob/c10s/90-default.preset?ref_type=heads#L460-465
+
+COPY $CONTAINERFILE /root/Containerfile

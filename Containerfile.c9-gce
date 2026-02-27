@@ -1,0 +1,49 @@
+# Containerfile for centos-9 gce
+FROM quay.io/centos-bootc/centos-bootc:stream9
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+	"@core" \
+	"chrony" \
+	"tar" \
+	"tuned" \
+	"acpid" \
+	"dhcp-client" \
+	"dnf-automatic" \
+	"gce-disk-expand" \
+	"google-compute-engine" \
+	"google-osconfig-agent" \
+	"grub2-tools" \
+	"grub2-tools-minimal" \
+	"langpacks-en" \
+	"net-tools" \
+	"python3" \
+	"rng-tools" \
+	"timedatex" \
+	"vim" \
+	--exclude="alsa-utils" \
+	--exclude="b43-fwcutter" \
+	--exclude="b43-openfwwf" \
+	--exclude="dmraid" \
+	--exclude="eject" \
+	--exclude="gpm" \
+	--exclude="irqbalance" \
+	--exclude="microcode_ctl" \
+	--exclude="qemu-guest-agent" \
+	--exclude="smartmontools" \
+	--exclude="dracut-config-rescue" \
+    --exclude="*-firmware" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN echo 'kargs = ["net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-gce.toml
+
+RUN systemctl enable \
+    "dnf-automatic.timer" \
+    "rngd" \
+    "sshd" && \
+    systemctl disable "reboot.target" "sshd-keygen@"
+
+COPY $CONTAINERFILE /root/Containerfile

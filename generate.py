@@ -40,8 +40,6 @@ def main():
         template_path = "Containerfile.fedora.jinja2"
     if distro is None:
         distro = "fedora"
-    if version is None:
-        version = "43"
     if image_type is None or image_type == "":
         print("generator: missing --type", file=sys.stderr)
         sys.exit(1)
@@ -49,7 +47,7 @@ def main():
     if distro == "fedora":
         base_image = f"quay.io/fedora/fedora-bootc:{version}"
     else:
-        base_image = f"quay.io/{distro}/{distro}-bootc:{version}"
+        base_image = f"quay.io/centos-bootc/centos-bootc:stream{version}"
 
     if not os.path.isabs(template_path) and not os.path.isfile(template_path):
         exe = sys.argv[0]

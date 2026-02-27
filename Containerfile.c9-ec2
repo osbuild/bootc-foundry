@@ -1,0 +1,50 @@
+# Containerfile for centos-9 ec2
+FROM quay.io/centos-bootc/centos-bootc:stream9
+
+ARG TARGETARCH
+ARG CONTAINERFILE
+
+RUN dnf install -y --skip-unavailable \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"rsync" \
+	"@core" \
+	"chrony" \
+	"tar" \
+	"tuned" \
+	"NetworkManager-cloud-setup" \
+	"authselect-compat" \
+	"dhcp-client" \
+	"dracut-config-generic" \
+	"gdisk" \
+	"langpacks-en" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"system-reinstall-bootc" \
+	"yum-utils" \
+	--exclude="firewalld" \
+	--exclude="qemu-guest-agent" \
+	--exclude="dracut-config-rescue" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="iprutils" \
+	--exclude="plymouth" \
+    --exclude="*-firmware" && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-ec2.toml
+
+RUN systemctl enable \
+    "NetworkManager" \
+    "cloud-config" \
+    "cloud-final" \
+    "cloud-init" \
+    "cloud-init-local" \
+    "nm-cloud-setup.service" \
+    "nm-cloud-setup.timer" \
+    "reboot.target" \
+    "sshd" \
+    "tuned"
+
+COPY $CONTAINERFILE /root/Containerfile

@@ -12,13 +12,13 @@ RUN dnf install -y --skip-unavailable \
     "amazon-ec2-utils" \
     "awscli2" \
     "ec2-instance-connect" \
-    --exclude="*-firmware" \
     --exclude="dracut-config-rescue" \
     --exclude="firewalld" \
     --exclude="fwupd" \
     --exclude="geolite2-city" \
     --exclude="geolite2-country" \
-    --exclude="plymouth" && \
+    --exclude="plymouth" \
+    --exclude="*-firmware" && \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
