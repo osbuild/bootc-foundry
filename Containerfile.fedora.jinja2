@@ -1,5 +1,5 @@
-# Containerfile for {{.Distro}}-{{.Version}} {{.ImageType}}
-FROM {{.BaseImage}}
+# Containerfile for {{ distro }}-{{ version }} {{ image_type }}
+FROM {{ base_image }}
 
 ARG TARGETARCH
 ARG CONTAINERFILE
@@ -9,28 +9,28 @@ RUN dnf install -y --skip-unavailable \
     "btrfs-progs" \
     "glibc-langpack-en" \
     "python3-dnf-plugin-tracer" \
-{{- if eq .ImageType "cloud-ec2"}}
+{% if image_type == "cloud-ec2" %}
     "amazon-ec2-utils" \
     "awscli2" \
     "ec2-instance-connect" \
-{{- end}}
-{{- if eq .ImageType "cloud-azure"}}
+{% endif %}
+{% if image_type == "cloud-azure" %}
     "WALinuxAgent" \
     "azure-vm-utils" \
     "hyperv-daemons" \
     "kernel-modules" \
-{{- end}}
-{{- if eq .ImageType "cloud-gce"}}
+{% endif %}
+{% if image_type == "cloud-gce" %}
     "google-compute-engine-guest-configs" \
     "google-compute-engine-oslogin" \
     "google-guest-agent" \
-{{- end}}
-{{- if eq .ImageType "cloud-qcow2"}}
+{%- endif %}
+{% if image_type == "cloud-qcow2" %}
     "qemu-guest-agent" \
-{{- end}}
-{{- if eq .ImageType "cloud-gce"}} \
+{% endif %}
+{%- if image_type == "cloud-gce" %} \
     --exclude="cloud-init" \
-{{- end}}
+{% endif %}
     --exclude="*-firmware" \
     --exclude="dracut-config-rescue" \
     --exclude="firewalld" \
@@ -42,16 +42,17 @@ RUN dnf install -y --skip-unavailable \
     rm -rf /var/cache/dnf
 
 RUN echo 'no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off' > /etc/kernel/cmdline
-{{if or (eq .ImageType "cloud-ec2") (eq .ImageType "cloud-azure") (eq .ImageType "cloud-qcow2")}}
+{% if image_type in ("cloud-ec2", "cloud-azure", "cloud-qcow2") %}
+
 RUN systemctl enable \
-{{- if ge .Version "43"}}
+{% if version|ge("43") %}
     "cloud-init-network.service" \
-{{- else}}
+{% else %}
     "cloud-init.service" \
-{{- end}}
+{% endif %}
     "cloud-config.service" \
     "cloud-init-local.service" \
     "cloud-final.service"
-{{- end}}
+{% endif %}
 
 COPY $CONTAINERFILE /root/Containerfile

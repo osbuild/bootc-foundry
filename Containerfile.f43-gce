@@ -25,5 +25,4 @@ RUN dnf install -y --skip-unavailable \
 
 RUN echo 'no_timer-check console=tty1 console=ttyS0,115200n8 systemd.firstboot=off' > /etc/kernel/cmdline
 
-
 COPY $CONTAINERFILE /root/Containerfile
