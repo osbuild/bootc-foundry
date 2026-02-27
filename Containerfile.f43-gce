@@ -1,4 +1,4 @@
-# Containerfile for fedora-43 cloud-gce
+# Containerfile for fedora-43 gce
 FROM quay.io/fedora/fedora-bootc:43
 
 ARG TARGETARCH
@@ -23,7 +23,7 @@ RUN dnf install -y --skip-unavailable \
     dnf clean all && \
     rm -rf /var/cache/dnf
 
-RUN echo 'kargs = ["no_timer-check"]' > /usr/lib/bootc/kargs.d/50-no-timer-check.toml && \
+RUN echo -e 'kargs = ["no_timer-check"]\nmatch-architectures = ["x86_64"]' > /usr/lib/bootc/kargs.d/50-no-timer-check.toml && \
     echo 'kargs = ["systemd.firstboot=off"]' > /usr/lib/bootc/kargs.d/50-systemd-firstboot.toml && \
     echo -e 'kargs = ["console=tty1 console=ttyS0,115200n8"]\nmatch-architectures = ["x86_64"]' > /usr/lib/bootc/kargs.d/50-console.toml
 

@@ -9,26 +9,26 @@ RUN dnf install -y --skip-unavailable \
     "btrfs-progs" \
     "glibc-langpack-en" \
     "python3-dnf-plugin-tracer" \
-{% if image_type == "cloud-ec2" %}
+{% if image_type == "ec2" %}
     "amazon-ec2-utils" \
     "awscli2" \
     "ec2-instance-connect" \
 {% endif %}
-{% if image_type == "cloud-azure" %}
+{% if image_type == "azure" %}
     "WALinuxAgent" \
     "azure-vm-utils" \
     "hyperv-daemons" \
     "kernel-modules" \
 {% endif %}
-{% if image_type == "cloud-gce" %}
+{% if image_type == "gce" %}
     "google-compute-engine-guest-configs" \
     "google-compute-engine-oslogin" \
     "google-guest-agent" \
 {%- endif %}
-{% if image_type == "cloud-qcow2" %}
+{% if image_type == "qcow2" %}
     "qemu-guest-agent" \
 {% endif %}
-{%- if image_type == "cloud-gce" %} \
+{%- if image_type == "gce" %} \
     --exclude="cloud-init" \
 {% endif %}
     --exclude="*-firmware" \
@@ -44,7 +44,7 @@ RUN dnf install -y --skip-unavailable \
 RUN echo -e 'kargs = ["no_timer-check"]\nmatch-architectures = ["x86_64"]' > /usr/lib/bootc/kargs.d/50-no-timer-check.toml && \
     echo 'kargs = ["systemd.firstboot=off"]' > /usr/lib/bootc/kargs.d/50-systemd-firstboot.toml && \
     echo -e 'kargs = ["console=tty1 console=ttyS0,115200n8"]\nmatch-architectures = ["x86_64"]' > /usr/lib/bootc/kargs.d/50-console.toml
-{% if image_type in ("cloud-ec2", "cloud-azure", "cloud-qcow2") %}
+{% if image_type in ("ec2", "azure", "qcow2") %}
 
 RUN systemctl enable \
 {% if version|ge("43") %}
