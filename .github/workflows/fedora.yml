@@ -70,18 +70,6 @@ jobs:
           arch: ${{ matrix.arch }}
           containerfile: ${{ matrix.containerfile }}
 
-      - name: Write matrix info
-        run: |
-          mkdir -p matrix-info
-          echo "${{ matrix.tag }}" > matrix-info/tag
-          echo "${{ matrix.arch }}" > matrix-info/arch
-
-      - name: Upload matrix info
-        uses: actions/upload-artifact@v4
-        with:
-          name: matrix-${{ matrix.tag }}-${{ matrix.arch }}
-          path: matrix-info
-
   fedora-manifest:
     name: fedora-manifest
     runs-on: ubuntu-latest
@@ -97,14 +85,6 @@ jobs:
           path: matrix-artifacts
           merge-multiple: false
 
-      - name: Collect tags and arches
-        id: matrix
-        run: |
-          TAGS=$(find matrix-artifacts -name tag -exec cat {} \; | sort -u | tr '\n' ' ')
-          ARCHES=$(find matrix-artifacts -name arch -exec cat {} \; | sort -u | tr '\n' ' ')
-          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
-          echo "arches=$ARCHES" >> "$GITHUB_OUTPUT"
-
       - name: Login to registries
         uses: ./.github/actions/login-registry
         with:
@@ -113,19 +93,9 @@ jobs:
           cache_username: ${{ github.actor }}
           cache_password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create and push multi-arch manifests
-        env:
-          REPO_URL: ${{ env.REPO_URL }}
-          CACHE_URL: ${{ env.CACHE_URL }}
-          TAGS: ${{ steps.matrix.outputs.tags }}
-          ARCHES: ${{ steps.matrix.outputs.arches }}
-        run: |
-          for tag in $TAGS; do
-            echo "Creating manifest for $tag"
-            buildah manifest rm "$REPO_URL:$tag" 2>/dev/null || true
-            buildah manifest create "$REPO_URL:$tag"
-            for arch in $ARCHES; do
-              buildah manifest add "$REPO_URL:$tag" "docker://$CACHE_URL:$tag-$arch"
-            done
-            buildah manifest push --all "$REPO_URL:$tag" "docker://$REPO_URL:$tag"
-          done
+      - name: Create multi-arch manifests
+        uses: ./.github/actions/create-manifest
+        with:
+          repo_url: ${{ env.REPO_URL }}
+          cache_url: ${{ env.CACHE_URL }}
+          matrix_artifacts_path: matrix-artifacts

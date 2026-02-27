@@ -1,0 +1,46 @@
+# Collect tags/arches from matrix artifacts and create multi-arch manifests.
+# Requires matrix artifacts downloaded to matrix_artifacts_path and login-registry run first.
+name: Create multi-arch manifests
+description: Collects tags and arches from artifact dir, then creates and pushes multi-arch manifests.
+inputs:
+  repo_url:
+    description: Target registry URL (e.g. quay.io/osbuild/fedora-bootc)
+    required: true
+  cache_url:
+    description: Cache registry URL (e.g. ghcr.io/org/repo/cache)
+    required: true
+  matrix_artifacts_path:
+    description: Path where matrix artifacts were downloaded (e.g. matrix-artifacts)
+    required: false
+    default: matrix-artifacts
+runs:
+  using: composite
+  steps:
+    - name: Collect tags and arches
+      shell: bash
+      id: matrix
+      env:
+        MATRIX_ARTIFACTS_PATH: ${{ inputs.matrix_artifacts_path }}
+      run: |
+        TAGS=$(find "$MATRIX_ARTIFACTS_PATH" -name tag -exec cat {} \; | sort -u | tr '\n' ' ')
+        ARCHES=$(find "$MATRIX_ARTIFACTS_PATH" -name arch -exec cat {} \; | sort -u | tr '\n' ' ')
+        echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+        echo "arches=$ARCHES" >> "$GITHUB_OUTPUT"
+        echo "TAGS=$TAGS" >> "$GITHUB_ENV"
+        echo "ARCHES=$ARCHES" >> "$GITHUB_ENV"
+
+    - name: Create and push multi-arch manifests
+      shell: bash
+      env:
+        REPO_URL: ${{ inputs.repo_url }}
+        CACHE_URL: ${{ inputs.cache_url }}
+      run: |
+        for tag in $TAGS; do
+          echo "Creating manifest for $tag"
+          buildah manifest rm "$REPO_URL:$tag" 2>/dev/null || true
+          buildah manifest create "$REPO_URL:$tag"
+          for arch in $ARCHES; do
+            buildah manifest add "$REPO_URL:$tag" "docker://$CACHE_URL:$tag-$arch"
+          done
+          buildah manifest push --all "$REPO_URL:$tag" "docker://$REPO_URL:$tag"
+        done

@@ -40,3 +40,19 @@ runs:
           -t "$IMAGE" .
         buildah push "$IMAGE"
         buildah push "$IMAGE" "$CACHE_IMAGE"
+
+    - name: Write matrix info
+      shell: bash
+      env:
+        TAG: ${{ inputs.tag }}
+        ARCH: ${{ inputs.arch }}
+      run: |
+        mkdir -p matrix-info
+        echo "$TAG" > matrix-info/tag
+        echo "$ARCH" > matrix-info/arch
+
+    - name: Upload matrix info
+      uses: actions/upload-artifact@v4
+      with:
+        name: matrix-${{ inputs.tag }}-${{ inputs.arch }}
+        path: matrix-info
