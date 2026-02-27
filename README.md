@@ -17,7 +17,10 @@ are used by image builder.
 ## Building Containerfiles
 
 Use `make` to build Containerfiles from templates. Go is required in order to
-build a small templating command that processes the templates.
+build a small templating command that processes the templates. Python Jinja2
+templating module must be installed:
+
+    dnf -y install python3-jinja2
 
 ## Building container images
 
