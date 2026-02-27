@@ -1,0 +1,42 @@
+# Build container image with Buildah and push to registry and cache.
+# Requires login-registry to be run first.
+name: Build and push image
+description: Builds image with Buildah and pushes to REPO_URL and CACHE_URL.
+inputs:
+  repo_url:
+    description: Target registry URL (e.g. quay.io/osbuild/fedora-bootc)
+    required: true
+  cache_url:
+    description: Cache registry URL (e.g. ghcr.io/org/repo/cache)
+    required: true
+  tag:
+    description: Image tag (e.g. 43-qcow2)
+    required: true
+  arch:
+    description: Target architecture (e.g. x86_64, aarch64)
+    required: true
+  containerfile:
+    description: Containerfile path (e.g. Containerfile.f43-qcow2)
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Build and push image
+      shell: bash
+      env:
+        REPO_URL: ${{ inputs.repo_url }}
+        CACHE_URL: ${{ inputs.cache_url }}
+        TAG: ${{ inputs.tag }}
+        ARCH: ${{ inputs.arch }}
+        CONTAINERFILE: ${{ inputs.containerfile }}
+      run: |
+        IMAGE="$REPO_URL:$TAG-$ARCH"
+        CACHE_IMAGE="$CACHE_URL:$TAG-$ARCH"
+        buildah pull "$CACHE_IMAGE" 2>/dev/null || true
+        buildah rmi "$IMAGE" 2>/dev/null || true
+        buildah build --layers --arch="$ARCH" \
+          --build-arg CONTAINERFILE="$CONTAINERFILE" \
+          -f "$CONTAINERFILE" \
+          -t "$IMAGE" .
+        buildah push "$IMAGE"
+        buildah push "$IMAGE" "$CACHE_IMAGE"

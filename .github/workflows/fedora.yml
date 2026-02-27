@@ -62,20 +62,13 @@ jobs:
           cache_password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
-        env:
-          REPO_URL: ${{ env.REPO_URL }}
-          CACHE_URL: ${{ env.CACHE_URL }}
-        run: |
-          IMAGE="$REPO_URL:${{ matrix.tag }}-${{ matrix.arch }}"
-          CACHE_IMAGE="$CACHE_URL:${{ matrix.tag }}-${{ matrix.arch }}"
-          buildah pull "$CACHE_IMAGE" 2>/dev/null || true
-          buildah rmi "$IMAGE" 2>/dev/null || true
-          buildah build --layers --arch=${{ matrix.arch }} \
-            --build-arg CONTAINERFILE="${{ matrix.containerfile }}" \
-            -f "${{ matrix.containerfile }}" \
-            -t "$IMAGE" .
-          buildah push "$IMAGE"
-          buildah push "$IMAGE" "$CACHE_IMAGE"
+        uses: ./.github/actions/build-push
+        with:
+          repo_url: ${{ env.REPO_URL }}
+          cache_url: ${{ env.CACHE_URL }}
+          tag: ${{ matrix.tag }}
+          arch: ${{ matrix.arch }}
+          containerfile: ${{ matrix.containerfile }}
 
       - name: Write matrix info
         run: |
