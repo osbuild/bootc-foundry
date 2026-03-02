@@ -1,0 +1,74 @@
+# Containerfile for centos-10 azure x86_64
+FROM quay.io/centos-bootc/centos-bootc:stream10
+
+RUN dnf install -y "@Server" "NetworkManager" "NetworkManager-cloud-setup" \
+	"WALinuxAgent" "azure-vm-utils" "bzip2" "cloud-init" "cloud-utils-growpart" \
+	"efibootmgr" "hyperv-daemons" "langpacks-en" "lvm2" "nvme-cli" "patch" \
+	"rng-tools" "rsync" "selinux-policy-targeted" "system-reinstall-bootc" "uuid" \
+	"yum-utils" --exclude="NetworkManager-config-server" \
+	--exclude="aic94xx-firmware" --exclude="alsa-firmware" --exclude="alsa-lib" \
+	--exclude="alsa-sof-firmware" --exclude="alsa-tools-firmware" \
+	--exclude="biosdevname" --exclude="bolt" --exclude="buildah" \
+	--exclude="cockpit-podman" --exclude="containernetworking-plugins" \
+	--exclude="dnf-plugin-spacewalk" --exclude="dracut-config-rescue" \
+	--exclude="glibc-all-langpacks" --exclude="initscripts-rename-device" \
+	--exclude="iprutils" --exclude="ivtv-firmware" --exclude="iwl100-firmware" \
+	--exclude="iwl1000-firmware" --exclude="iwl105-firmware" \
+	--exclude="iwl135-firmware" --exclude="iwl2000-firmware" \
+	--exclude="iwl2030-firmware" --exclude="iwl3160-firmware" \
+	--exclude="iwl3945-firmware" --exclude="iwl4965-firmware" \
+	--exclude="iwl5000-firmware" --exclude="iwl5150-firmware" \
+	--exclude="iwl6000-firmware" --exclude="iwl6000g2a-firmware" \
+	--exclude="iwl6000g2b-firmware" --exclude="iwl6050-firmware" \
+	--exclude="iwl7260-firmware" --exclude="libertas-sd8686-firmware" \
+	--exclude="libertas-sd8787-firmware" --exclude="libertas-usb8388-firmware" \
+	--exclude="microcode_ctl" --exclude="plymouth" --exclude="podman" \
+	--exclude="python3-dnf-plugin-spacewalk" --exclude="python3-hwdata" \
+	--exclude="python3-rhnlib" --exclude="rhn-check" --exclude="rhn-client-tools" \
+	--exclude="rhn-setup" --exclude="rhnlib" --exclude="rhnsd" \
+	--exclude="usb_modeswitch"
+
+RUN cat << 'EOF' > "/etc/kernel/cmdline"
+ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300
+EOF
+
+RUN systemctl enable "firewalld" "nm-cloud-setup.service" \
+	"nm-cloud-setup.timer" "sshd" "temp-disk-dataloss-warning.service" "waagent"
+
+RUN cat << 'EOF_EOF' > "/usr/local/sbin/temp-disk-dataloss-warning"
+#!/bin/sh
+# /usr/local/sbin/temp-disk-dataloss-warning
+# Write dataloss warning file on mounted Azure resource disk
+
+AZURE_RESOURCE_DISK_PART1="/dev/disk/cloud/azure_resource-part1"
+
+MOUNTPATH=$(grep "$AZURE_RESOURCE_DISK_PART1" /etc/fstab | tr '\t' ' ' | cut -d' ' -f2)
+if [ -z "$MOUNTPATH" ]; then
+    echo "There is no mountpoint of $AZURE_RESOURCE_DISK_PART1 in /etc/fstab"
+    exit 0
+fi
+
+if [ "$MOUNTPATH" = "none" ]; then
+    echo "Mountpoint of $AZURE_RESOURCE_DISK_PART1 is not a path"
+    exit 1
+fi
+
+if ! mountpoint -q "$MOUNTPATH"; then
+    echo "$AZURE_RESOURCE_DISK_PART1 is not mounted at $MOUNTPATH"
+    exit 1
+fi
+
+echo "Creating a dataloss warning file at ${MOUNTPATH}/DATALOSS_WARNING_README.txt"
+
+cat <<'EOF' > "${MOUNTPATH}/DATALOSS_WARNING_README.txt"
+WARNING: THIS IS A TEMPORARY DISK.
+
+Any data stored on this drive is SUBJECT TO LOSS and THERE IS NO WAY TO RECOVER IT.
+
+Please do not use this disk for storing any personal or application data.
+
+EOF
+EOF_EOF
+
+RUN chmod 0755 "/usr/local/sbin/temp-disk-dataloss-warning"
+

@@ -1,0 +1,34 @@
+# Containerfile for centos-10 gce x86_64
+FROM quay.io/centos-bootc/centos-bootc:stream10
+
+RUN dnf install -y "@core" "acpid" "chrony" "dnf-automatic" "gce-disk-expand" \
+	"google-compute-engine" "google-osconfig-agent" "grub2-tools" \
+	"grub2-tools-minimal" "langpacks-en" "net-tools" "python3" "rng-tools" "tar" \
+	"timedatex" "tuned" "vim" --exclude="aic94xx-firmware" --exclude="alsa-utils" \
+	--exclude="atmel-firmware" --exclude="b43-fwcutter" --exclude="b43-openfwwf" \
+	--exclude="bfa-firmware" --exclude="dmraid" --exclude="dracut-config-rescue" \
+	--exclude="eject" --exclude="gpm" --exclude="ipw2100-firmware" \
+	--exclude="ipw2200-firmware" --exclude="irqbalance" --exclude="ivtv-firmware" \
+	--exclude="iwl100-firmware" --exclude="iwl1000-firmware" \
+	--exclude="iwl105-firmware" --exclude="iwl135-firmware" \
+	--exclude="iwl2000-firmware" --exclude="iwl2030-firmware" \
+	--exclude="iwl3160-firmware" --exclude="iwl3945-firmware" \
+	--exclude="iwl4965-firmware" --exclude="iwl5000-firmware" \
+	--exclude="iwl5150-firmware" --exclude="iwl6000-firmware" \
+	--exclude="iwl6000g2a-firmware" --exclude="iwl6050-firmware" \
+	--exclude="iwl7260-firmware" --exclude="kernel-firmware" \
+	--exclude="libertas-usb8388-firmware" --exclude="microcode_ctl" \
+	--exclude="qemu-guest-agent" --exclude="ql2100-firmware" \
+	--exclude="ql2200-firmware" --exclude="ql23xx-firmware" \
+	--exclude="ql2400-firmware" --exclude="ql2500-firmware" \
+	--exclude="rt61pci-firmware" --exclude="rt73usb-firmware" \
+	--exclude="smartmontools" --exclude="xorg-x11-drv-ati-firmware" \
+	--exclude="zd1211-firmware"
+
+RUN cat << 'EOF' > "/etc/kernel/cmdline"
+biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d
+EOF
+
+RUN systemctl enable "dnf-automatic.timer" "rngd" "sshd" && systemctl disable \
+	"reboot.target" "sshd-keygen@"
+

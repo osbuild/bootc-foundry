@@ -174,8 +174,5 @@ RUN systemctl enable \
     "sshd" && \
     systemctl disable "reboot.target" "sshd-keygen@"
 {% endif %}
-{% if image_type == "qcow2" %}
-# XXX: https://gitlab.com/redhat/centos-stream/rpms/centos-stream-release/-/blob/c10s/90-default.preset?ref_type=heads#L460-465
-{% endif %}
 
 COPY $CONTAINERFILE /root/Containerfile

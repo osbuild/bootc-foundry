@@ -46,6 +46,5 @@ RUN dnf install -y --skip-unavailable \
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml
 
-# XXX: https://gitlab.com/redhat/centos-stream/rpms/centos-stream-release/-/blob/c10s/90-default.preset?ref_type=heads#L460-465
 
 COPY $CONTAINERFILE /root/Containerfile
