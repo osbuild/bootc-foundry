@@ -87,6 +87,7 @@ jobs:
           CONTAINERFILE: ${{ matrix.containerfile }}
           FROM_IMAGE: ${{ matrix.from_image }}
           FROM_TAG: ${{ matrix.from_tag }}
+          UPSTREAMTAG: ${{ matrix.from_tag }}
         run: |
           IMAGE="$TO_IMAGE:$TO_TAG-$ARCH"
           CACHE_IMAGE="$CACHE_URL:$TO_TAG-$ARCH"
@@ -94,6 +95,7 @@ jobs:
           buildah rmi "$IMAGE" 2>/dev/null || true
           buildah build --layers --arch="$ARCH" \
             --build-arg CONTAINERFILE="Containerfile.$CONTAINERFILE" \
+            --build-arg UPSTREAMTAG="$UPSTREAMTAG" \
             --from "$FROM_IMAGE:$FROM_TAG" \
             -f "Containerfile.$CONTAINERFILE" \
             -t "$IMAGE" .

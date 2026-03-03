@@ -36,21 +36,21 @@ embedded within in `/root` directory.
 
 Images are available as multi-arch image manifests with the following URIs:
 
-Fedora (`x86_64`, `aarch64`)
+[Fedora](https://quay.io/repository/osbuild/fedora-bootc) (`x86_64`, `aarch64`)
 
 * `quay.io/osbuild/fedora-bootc:43-ec2`
 * `quay.io/osbuild/fedora-bootc:43-azure`
 * `quay.io/osbuild/fedora-bootc:43-gce`
 * `quay.io/osbuild/fedora-bootc:43-qcow2`
 
-CentOS 9 Stream (`x86_64`, `aarch64`)
+[CentOS 9 Stream](https://quay.io/repository/osbuild/centos-bootc) (`x86_64`, `aarch64`)
 
 * `quay.io/osbuild/centos-bootc:stream9-ec2`
 * `quay.io/osbuild/centos-bootc:stream9-azure`
 * `quay.io/osbuild/centos-bootc:stream9-gce`
 * `quay.io/osbuild/centos-bootc:stream9-qcow2`
 
-CentOS 10 Stream (`x86_64`, `aarch64`)
+[CentOS 10 Stream](https://quay.io/repository/osbuild/centos-bootc) (`x86_64`, `aarch64`)
 
 * `quay.io/osbuild/centos-bootc:stream10-ec2`
 * `quay.io/osbuild/centos-bootc:stream10-azure`
@@ -87,5 +87,4 @@ Apache License 2.0
 
 ## TODO
 
-* Fix `FROM .` in the embedded Containerfile
 * Prepend some good comment for embedded Containerfile explaining to end users what to do

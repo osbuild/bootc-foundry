@@ -1,7 +1,8 @@
-FROM .
+FROM quay.io/fedora/fedora-bootc
 
 ARG CONTAINERFILE
-COPY $CONTAINERFILE /root/Containerfile
+ARG UPSTREAMTAG
+COPY $CONTAINERFILE /root/Containerfile && sed -i "s|^FROM \(.*\)|FROM \1:$UPSTREAMTAG|" /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
     "@cloud-server-environment" \
