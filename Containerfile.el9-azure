@@ -62,5 +62,7 @@ RUN systemctl enable \
     "sshd" \
     "waagent"
 
-COPY --chown=root:root --chmod=0755 resources/temp-disk-dataloss-warning /usr/local/sbin/temp-disk-dataloss-warning
-COPY --chown=root:root --chmod=0644 resources/temp-disk-dataloss-warning.service /etc/systemd/system/temp-disk-dataloss-warning.service
+COPY --chown=root:root --chmod=0755 resources/temp-disk-dataloss-warning \
+	/usr/local/sbin/temp-disk-dataloss-warning /root/temp-disk-dataloss-warning
+COPY --chown=root:root --chmod=0644 resources/temp-disk-dataloss-warning.service \
+	/etc/systemd/system/temp-disk-dataloss-warning.service /root/temp-disk-dataloss-warning.service

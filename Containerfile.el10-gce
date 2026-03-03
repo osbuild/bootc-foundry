@@ -3,6 +3,9 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
+COPY --chown=root:root --chmod=0644 resources/google-cloud-el10.repo \
+	/etc/yum.repos.d/google-cloud-el10.repo /root/google-cloud-el10.repo
+
 RUN dnf install -y \
 	"@core" \
 	"acpid" \
