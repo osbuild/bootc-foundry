@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN dnf install -y --skip-unavailable \
+RUN microdnf install -y --skip-unavailable \
 	"cloud-init" \
 	"cloud-utils-growpart" \
 	"rsync" \
@@ -50,8 +50,8 @@ RUN dnf install -y --skip-unavailable \
 	--exclude="iprutils" \
 	--exclude="plymouth" \
     --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+    microdnf clean all && \
+    rm -rf /var/cache/microdnf
 
 RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-azure.toml
 
@@ -61,3 +61,6 @@ RUN systemctl enable \
     "nm-cloud-setup.timer" \
     "sshd" \
     "waagent"
+
+COPY --chown root:root --chmod=0755 resources/temp-disk-dataloss-warning /usr/local/sbin/temp-disk-dataloss-warning
+COPY --chown root:root --chmod=0644 resources/temp-disk-dataloss-warning.service /etc/systemd/system/temp-disk-dataloss-warning.service

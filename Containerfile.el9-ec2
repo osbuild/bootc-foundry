@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN dnf install -y --skip-unavailable \
+RUN microdnf install -y --skip-unavailable \
 	"cloud-init" \
 	"cloud-utils-growpart" \
 	"rsync" \
@@ -29,8 +29,8 @@ RUN dnf install -y --skip-unavailable \
 	--exclude="iprutils" \
 	--exclude="plymouth" \
     --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+    microdnf clean all && \
+    rm -rf /var/cache/microdnf
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-ec2.toml
 
