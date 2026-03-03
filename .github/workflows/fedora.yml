@@ -14,88 +14,168 @@ permissions:
   packages: write
 
 env:
-  REPO_URL: quay.io/osbuild/fedora-bootc
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
-  fedora-build:
-    name: fedora-${{ matrix.tag }}-${{ matrix.arch }}
+  build-and-push:
+    name: b-${{ matrix.containerfile }}-${{ matrix.from_tag }}-${{ matrix.arch }}
     runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - containerfile: Containerfile.fedora-qcow2
-            tag: 43-qcow2
+          - containerfile: fedora-qcow2
+            to_tag: 43-qcow2
             arch: x86_64
-          - containerfile: Containerfile.fedora-qcow2
-            tag: 43-qcow2
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-qcow2
+            to_tag: 43-qcow2
             arch: aarch64
-          - containerfile: Containerfile.fedora-gce
-            tag: 43-gce
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-gce
+            to_tag: 43-gce
             arch: x86_64
-          - containerfile: Containerfile.fedora-gce
-            tag: 43-gce
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-gce
+            to_tag: 43-gce
             arch: aarch64
-          - containerfile: Containerfile.fedora-azure
-            tag: 43-azure
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-azure
+            to_tag: 43-azure
             arch: x86_64
-          - containerfile: Containerfile.fedora-azure
-            tag: 43-azure
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-azure
+            to_tag: 43-azure
             arch: aarch64
-          - containerfile: Containerfile.fedora-ec2
-            tag: 43-ec2
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-ec2
+            to_tag: 43-ec2
             arch: x86_64
-          - containerfile: Containerfile.fedora-ec2
-            tag: 43-ec2
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
+          - containerfile: fedora-ec2
+            to_tag: 43-ec2
             arch: aarch64
+            to_image: quay.io/osbuild/fedora-bootc
+            from_image: quay.io/fedora/fedora-bootc
+            from_tag: "43"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login to registries
-        uses: ./.github/actions/login-registry
-        with:
-          username: ${{ secrets.REPO_USERNAME }}
-          password: ${{ secrets.REPO_PASSWORD }}
-          cache_username: ${{ github.actor }}
-          cache_password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Buildah
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y buildah
+
+      - name: Login to container registry
+        env:
+          REPO_USERNAME: ${{ secrets.REPO_USERNAME }}
+          REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
+        run: |
+          if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
+            echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
+          else
+            echo "No registry credentials; push may fail"
+          fi
+
+      - name: Login to ghcr.io
+        env:
+          CACHE_USERNAME: ${{ github.actor }}
+          CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io
 
       - name: Build and push image
-        uses: ./.github/actions/build-push
-        with:
-          repo_url: ${{ env.REPO_URL }}
-          cache_url: ${{ env.CACHE_URL }}
-          tag: ${{ matrix.tag }}
-          arch: ${{ matrix.arch }}
-          containerfile: ${{ matrix.containerfile }}
+        env:
+          TO_IMAGE: ${{ matrix.to_image }}
+          CACHE_URL: ${{ env.CACHE_URL }}
+          TO_TAG: ${{ matrix.to_tag }}
+          ARCH: ${{ matrix.arch }}
+          CONTAINERFILE: ${{ matrix.containerfile }}
+          FROM_IMAGE: ${{ matrix.from_image }}
+          FROM_TAG: ${{ matrix.from_tag }}
+        run: |
+          IMAGE="$TO_IMAGE:$TO_TAG-$ARCH"
+          CACHE_IMAGE="$CACHE_URL:$TO_TAG-$ARCH"
+          buildah pull "$CACHE_IMAGE" 2>/dev/null || true
+          buildah rmi "$IMAGE" 2>/dev/null || true
+          buildah build --layers --arch="$ARCH" \
+            --build-arg CONTAINERFILE="Containerfile.$CONTAINERFILE" \
+            --from "$FROM_IMAGE:$FROM_TAG" \
+            -f "Containerfile.$CONTAINERFILE" \
+            -t "$IMAGE" .
+          buildah push "$IMAGE"
+          buildah push "$IMAGE" "$CACHE_IMAGE"
 
-  fedora-manifest:
-    name: fedora-manifest
+  generate-manifests:
+    name: mf-${{ matrix.tag }}
     runs-on: ubuntu-latest
-    needs: fedora-build
+    needs: build-and-push
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: quay.io/osbuild/fedora-bootc
+            arches: "x86_64 aarch64"
+            tag: "43-qcow2"
+          - image: quay.io/osbuild/fedora-bootc
+            arches: "x86_64 aarch64"
+            tag: "43-ec2"
+          - image: quay.io/osbuild/fedora-bootc
+            arches: "x86_64 aarch64"
+            tag: "43-azure"
+          - image: quay.io/osbuild/fedora-bootc
+            arches: "x86_64 aarch64"
+            tag: "43-gce"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Install Buildah
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y buildah
 
-      - name: Download matrix info
-        uses: actions/download-artifact@v4
-        with:
-          pattern: matrix-*
-          path: matrix-artifacts
-          merge-multiple: false
+      - name: Login to container registry
+        env:
+          REPO_USERNAME: ${{ secrets.REPO_USERNAME }}
+          REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
+        run: |
+          if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
+            echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
+          else
+            echo "No registry credentials; push may fail"
+          fi
 
-      - name: Login to registries
-        uses: ./.github/actions/login-registry
-        with:
-          username: ${{ secrets.REPO_USERNAME }}
-          password: ${{ secrets.REPO_PASSWORD }}
-          cache_username: ${{ github.actor }}
-          cache_password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to ghcr.io
+        env:
+          CACHE_USERNAME: ${{ github.actor }}
+          CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io
 
-      - name: Create multi-arch manifests
-        uses: ./.github/actions/create-manifest
-        with:
-          repo_url: ${{ env.REPO_URL }}
-          cache_url: ${{ env.CACHE_URL }}
-          matrix_artifacts_path: matrix-artifacts
+      - name: Create and push multi-arch manifest
+        env:
+          IMAGE: ${{ matrix.image }}
+          TAG: ${{ matrix.tag }}
+          ARCHES: ${{ matrix.arches }}
+          CACHE_URL: ${{ env.CACHE_URL }}
+        run: |
+          echo "Creating manifest for $IMAGE:$TAG"
+          buildah manifest rm "$IMAGE:$TAG" 2>/dev/null || true
+          buildah manifest create "$IMAGE:$TAG"
+          for arch in $ARCHES; do
+            buildah manifest add "$IMAGE:$TAG" "docker://$CACHE_URL:$TAG-$arch"
+          done
+          buildah manifest push --all "$IMAGE:$TAG" "docker://$IMAGE:$TAG"
