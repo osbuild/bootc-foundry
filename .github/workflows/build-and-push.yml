@@ -1,4 +1,4 @@
-name: Build Fedora
+name: Build and Push
 
 on:
   push:
@@ -35,12 +35,14 @@ jobs:
       - name: Set matrix outputs
         id: write
         run: |
-          echo "build_matrix<<BUILD_EOF" >> "$GITHUB_OUTPUT"
+          echo "build_matrix<<ENDOFBUILDMATRIX" >> "$GITHUB_OUTPUT"
           cat .github/matrices/build-matrix.json >> "$GITHUB_OUTPUT"
-          echo "BUILD_EOF" >> "$GITHUB_OUTPUT"
-          echo "manifest_matrix<<MANIFEST_EOF" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
+          echo "ENDOFBUILDMATRIX" >> "$GITHUB_OUTPUT"
+          echo "manifest_matrix<<ENDOFMANIFESTMATRIX" >> "$GITHUB_OUTPUT"
           cat .github/matrices/manifest-matrix.json >> "$GITHUB_OUTPUT"
-          echo "MANIFEST_EOF" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_OUTPUT"
+          echo "ENDOFMANIFESTMATRIX" >> "$GITHUB_OUTPUT"
 
   build-and-push:
     name: b-${{ matrix.containerfile }}-${{ matrix.from_tag }}-${{ matrix.arch }}
