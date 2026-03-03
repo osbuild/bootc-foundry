@@ -1,30 +1,43 @@
 # Containerfile for centos-10 ec2 x86_64
 FROM quay.io/centos-bootc/centos-bootc:stream10
 
-RUN dnf install -y "@core" "NetworkManager-cloud-setup" "chrony" "cloud-init" \
-	"cloud-utils-growpart" "dhcpcd" "dracut-config-generic" "kdump-utils" \
-	"langpacks-en" "redhat-release" "redhat-release-eula" "rsync" \
-	"system-reinstall-bootc" "tar" "tuned" "yum-utils" \
-	--exclude="aic94xx-firmware" --exclude="alsa-firmware" \
-	--exclude="alsa-tools-firmware" --exclude="biosdevname" \
-	--exclude="dracut-config-rescue" --exclude="firewalld" --exclude="iprutils" \
-	--exclude="ivtv-firmware" --exclude="iwl100-firmware" \
-	--exclude="iwl1000-firmware" --exclude="iwl105-firmware" \
-	--exclude="iwl135-firmware" --exclude="iwl2000-firmware" \
-	--exclude="iwl2030-firmware" --exclude="iwl3160-firmware" \
-	--exclude="iwl3945-firmware" --exclude="iwl4965-firmware" \
-	--exclude="iwl5000-firmware" --exclude="iwl5150-firmware" \
-	--exclude="iwl6000-firmware" --exclude="iwl6000g2a-firmware" \
-	--exclude="iwl6000g2b-firmware" --exclude="iwl6050-firmware" \
-	--exclude="iwl7260-firmware" --exclude="libertas-sd8686-firmware" \
-	--exclude="libertas-sd8787-firmware" --exclude="libertas-usb8388-firmware" \
-	--exclude="plymouth" --exclude="qemu-guest-agent"
+ARG CONTAINERFILE
 
-RUN cat << 'EOF' > "/etc/kernel/cmdline"
-console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295
-EOF
+RUN dnf install -y \
+	"@core" \
+	"NetworkManager-cloud-setup" \
+	"chrony" \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"dhcpcd" \
+	"dracut-config-generic" \
+	"kdump-utils" \
+	"langpacks-en" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"rsync" \
+	"system-reinstall-bootc" \
+	"tar" \
+	"tuned" \
+	"yum-utils" \
+	--exclude="biosdevname" \
+	--exclude="dracut-config-rescue" \
+	--exclude="firewalld" \
+	--exclude="iprutils" \
+	--exclude="plymouth" \
+	--exclude="qemu-guest-agent" \
+	--exclude="*-firmware"
 
-RUN systemctl enable "NetworkManager" "cloud-config" "cloud-final" "cloud-init" \
-	"cloud-init-local" "nm-cloud-setup.service" "nm-cloud-setup.timer" \
-	"reboot.target" "sshd" "tuned"
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
 
+RUN systemctl enable \
+	"NetworkManager" \
+	"cloud-config" \
+	"cloud-final" \
+	"cloud-init" \
+	"cloud-init-local" \
+	"nm-cloud-setup.service" \
+	"nm-cloud-setup.timer" \
+	"reboot.target" \
+	"sshd" \
+	"tuned"

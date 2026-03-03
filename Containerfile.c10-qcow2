@@ -1,27 +1,42 @@
 # Containerfile for centos-10 qcow2 x86_64
 FROM quay.io/centos-bootc/centos-bootc:stream10
 
-RUN dnf install -y "@core" "chrony" "cloud-init" "cloud-utils-growpart" \
-	"cockpit-system" "cockpit-ws" "dnf-utils" "dosfstools" "nfs-utils" "oddjob" \
-	"oddjob-mkhomedir" "psmisc" "python3-jsonschema" "qemu-guest-agent" \
-	"redhat-release" "redhat-release-eula" "rsync" "system-reinstall-bootc" "tar" \
-	"tcpdump" "tuned" --exclude="aic94xx-firmware" --exclude="alsa-firmware" \
-	--exclude="alsa-lib" --exclude="alsa-tools-firmware" --exclude="biosdevname" \
-	--exclude="dnf-plugin-spacewalk" --exclude="dracut-config-rescue" \
-	--exclude="fedora-release" --exclude="fedora-repos" --exclude="firewalld" \
-	--exclude="iprutils" --exclude="ivtv-firmware" --exclude="iwl100-firmware" \
-	--exclude="iwl1000-firmware" --exclude="iwl105-firmware" \
-	--exclude="iwl135-firmware" --exclude="iwl2000-firmware" \
-	--exclude="iwl2030-firmware" --exclude="iwl3160-firmware" \
-	--exclude="iwl3945-firmware" --exclude="iwl4965-firmware" \
-	--exclude="iwl5000-firmware" --exclude="iwl5150-firmware" \
-	--exclude="iwl6000-firmware" --exclude="iwl6000g2a-firmware" \
-	--exclude="iwl6000g2b-firmware" --exclude="iwl6050-firmware" \
-	--exclude="iwl7260-firmware" --exclude="langpacks-*" --exclude="langpacks-en" \
-	--exclude="libertas-sd8787-firmware" --exclude="plymouth" \
-	--exclude="rng-tools" --exclude="udisks2"
+ARG CONTAINERFILE
 
-RUN cat << 'EOF' > "/etc/kernel/cmdline"
-console=tty0 console=ttyS0,115200n8
-EOF
+RUN dnf install -y \
+	"@core" \
+	"chrony" \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"cockpit-system" \
+	"cockpit-ws" \
+	"dnf-utils" \
+	"dosfstools" \
+	"nfs-utils" \
+	"oddjob" \
+	"oddjob-mkhomedir" \
+	"psmisc" \
+	"python3-jsonschema" \
+	"qemu-guest-agent" \
+	"redhat-release" \
+	"redhat-release-eula" \
+	"rsync" \
+	"system-reinstall-bootc" \
+	"tar" \
+	"tcpdump" \
+	"tuned" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="dnf-plugin-spacewalk" \
+	--exclude="dracut-config-rescue" \
+	--exclude="fedora-release" \
+	--exclude="fedora-repos" \
+	--exclude="firewalld" \
+	--exclude="iprutils" \
+	--exclude="langpacks-*" \
+	--exclude="plymouth" \
+	--exclude="rng-tools" \
+	--exclude="udisks2" \
+	--exclude="*-firmware"
 
+RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml

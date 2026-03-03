@@ -1,39 +1,64 @@
 # Containerfile for centos-10 azure x86_64
 FROM quay.io/centos-bootc/centos-bootc:stream10
 
-RUN dnf install -y "@Server" "NetworkManager" "NetworkManager-cloud-setup" \
-	"WALinuxAgent" "azure-vm-utils" "bzip2" "cloud-init" "cloud-utils-growpart" \
-	"efibootmgr" "hyperv-daemons" "langpacks-en" "lvm2" "nvme-cli" "patch" \
-	"rng-tools" "rsync" "selinux-policy-targeted" "system-reinstall-bootc" "uuid" \
-	"yum-utils" --exclude="NetworkManager-config-server" \
-	--exclude="aic94xx-firmware" --exclude="alsa-firmware" --exclude="alsa-lib" \
-	--exclude="alsa-sof-firmware" --exclude="alsa-tools-firmware" \
-	--exclude="biosdevname" --exclude="bolt" --exclude="buildah" \
-	--exclude="cockpit-podman" --exclude="containernetworking-plugins" \
-	--exclude="dnf-plugin-spacewalk" --exclude="dracut-config-rescue" \
-	--exclude="glibc-all-langpacks" --exclude="initscripts-rename-device" \
-	--exclude="iprutils" --exclude="ivtv-firmware" --exclude="iwl100-firmware" \
-	--exclude="iwl1000-firmware" --exclude="iwl105-firmware" \
-	--exclude="iwl135-firmware" --exclude="iwl2000-firmware" \
-	--exclude="iwl2030-firmware" --exclude="iwl3160-firmware" \
-	--exclude="iwl3945-firmware" --exclude="iwl4965-firmware" \
-	--exclude="iwl5000-firmware" --exclude="iwl5150-firmware" \
-	--exclude="iwl6000-firmware" --exclude="iwl6000g2a-firmware" \
-	--exclude="iwl6000g2b-firmware" --exclude="iwl6050-firmware" \
-	--exclude="iwl7260-firmware" --exclude="libertas-sd8686-firmware" \
-	--exclude="libertas-sd8787-firmware" --exclude="libertas-usb8388-firmware" \
-	--exclude="microcode_ctl" --exclude="plymouth" --exclude="podman" \
-	--exclude="python3-dnf-plugin-spacewalk" --exclude="python3-hwdata" \
-	--exclude="python3-rhnlib" --exclude="rhn-check" --exclude="rhn-client-tools" \
-	--exclude="rhn-setup" --exclude="rhnlib" --exclude="rhnsd" \
-	--exclude="usb_modeswitch"
+ARG CONTAINERFILE
 
-RUN cat << 'EOF' > "/etc/kernel/cmdline"
-ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300
-EOF
+RUN dnf install -y \
+	"@Server" \
+	"NetworkManager" \
+	"NetworkManager-cloud-setup" \
+	"WALinuxAgent" \
+	"azure-vm-utils" \
+	"bzip2" \
+	"cloud-init" \
+	"cloud-utils-growpart" \
+	"efibootmgr" \
+	"hyperv-daemons" \
+	"langpacks-en" \
+	"lvm2" \
+	"nvme-cli" \
+	"patch" \
+	"rng-tools" \
+	"rsync" \
+	"selinux-policy-targeted" \
+	"system-reinstall-bootc" \
+	"uuid" \
+	"yum-utils" \
+	--exclude="NetworkManager-config-server" \
+	--exclude="alsa-lib" \
+	--exclude="biosdevname" \
+	--exclude="bolt" \
+	--exclude="buildah" \
+	--exclude="cockpit-podman" \
+	--exclude="containernetworking-plugins" \
+	--exclude="dnf-plugin-spacewalk" \
+	--exclude="dracut-config-rescue" \
+	--exclude="glibc-all-langpacks" \
+	--exclude="initscripts-rename-device" \
+	--exclude="iprutils" \
+	--exclude="microcode_ctl" \
+	--exclude="plymouth" \
+	--exclude="podman" \
+	--exclude="python3-dnf-plugin-spacewalk" \
+	--exclude="python3-hwdata" \
+	--exclude="python3-rhnlib" \
+	--exclude="rhn-check" \
+	--exclude="rhn-client-tools" \
+	--exclude="rhn-setup" \
+	--exclude="rhnlib" \
+	--exclude="rhnsd" \
+	--exclude="usb_modeswitch" \
+	--exclude="*-firmware"
 
-RUN systemctl enable "firewalld" "nm-cloud-setup.service" \
-	"nm-cloud-setup.timer" "sshd" "temp-disk-dataloss-warning.service" "waagent"
+RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
+
+RUN systemctl enable \
+	"firewalld" \
+	"nm-cloud-setup.service" \
+	"nm-cloud-setup.timer" \
+	"sshd" \
+	"temp-disk-dataloss-warning.service" \
+	"waagent"
 
 RUN cat << 'EOF_EOF' > "/usr/local/sbin/temp-disk-dataloss-warning"
 #!/bin/sh
@@ -71,4 +96,3 @@ EOF
 EOF_EOF
 
 RUN chmod 0755 "/usr/local/sbin/temp-disk-dataloss-warning"
-

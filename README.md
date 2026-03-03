@@ -40,8 +40,18 @@ Fedora (`x86_64`, `aarch64`)
 * `quay.io/osbuild/fedora-bootc:43-gce`
 * `quay.io/osbuild/fedora-bootc:43-qcow2`
 
+## Building images
+
+```
+image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-ec2 --bootc-default-fs ext4 ami
+image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-azure --bootc-default-fs ext4 vhd
+image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-gce --bootc-default-fs ext4 gce
+image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-qcow2 --bootc-default-fs ext4 qcow2
+```
+
 ## TODO
 
 * Supported OSes: Fedora N, N-1, Stream 9/10, RHEL latest (10.2/9.8 downstream only)
 * Use `--from` to have less Containefiles (not too much useful at this point)
 * Figure out a good comment for all Containerfile explaining to end users what to do
+* Try all the images above

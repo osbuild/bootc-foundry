@@ -1,7 +1,6 @@
 # Containerfile for centos-9 gce
 FROM quay.io/centos-bootc/centos-bootc:stream9
 
-ARG TARGETARCH
 ARG CONTAINERFILE
 
 RUN dnf install -y --skip-unavailable \
