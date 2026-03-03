@@ -16,7 +16,7 @@ inputs:
     description: Target architecture (e.g. x86_64, aarch64)
     required: true
   containerfile:
-    description: Containerfile path (e.g. Containerfile.f43-qcow2)
+    description: Containerfile path (e.g. Containerfile.fedora-qcow2)
     required: true
 runs:
   using: composite
