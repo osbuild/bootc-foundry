@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN microdnf install -y \
+RUN dnf install -y \
 	"@core" \
 	"chrony" \
 	"tar" \
@@ -34,8 +34,8 @@ RUN microdnf install -y \
 	--exclude="smartmontools" \
 	--exclude="dracut-config-rescue" \
     --exclude="*-firmware" && \
-    microdnf clean all && \
-    rm -rf /var/cache/microdnf
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-gce.toml
 

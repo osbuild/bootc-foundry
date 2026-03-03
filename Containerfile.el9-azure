@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN microdnf install -y \
+RUN dnf install -y \
 	"cloud-init" \
 	"cloud-utils-growpart" \
 	"rsync" \
@@ -50,8 +50,8 @@ RUN microdnf install -y \
 	--exclude="iprutils" \
 	--exclude="plymouth" \
     --exclude="*-firmware" && \
-    microdnf clean all && \
-    rm -rf /var/cache/microdnf
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-azure.toml
 

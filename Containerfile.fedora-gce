@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN microdnf install -y --skip-unavailable \
+RUN dnf install -y --skip-unavailable \
     "@cloud-server-environment" \
     "btrfs-progs" \
     "glibc-langpack-en" \
@@ -19,7 +19,7 @@ RUN microdnf install -y --skip-unavailable \
     --exclude="geolite2-country" \
     --exclude="plymouth" \
     --exclude="*-firmware" && \
-    microdnf clean all && \
-    rm -rf /var/cache/microdnf
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["console=tty1 console=ttyS0,115200n8 systemd.firstboot=off no_timer-check"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
