@@ -3,7 +3,7 @@ FROM .
 ARG CONTAINERFILE
 COPY $CONTAINERFILE /root/Containerfile
 
-RUN dnf install -y --skip-unavailable \
+RUN dnf install -y \
 	"@core" \
 	"acpid" \
 	"chrony" \
