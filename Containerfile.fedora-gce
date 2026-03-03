@@ -1,7 +1,7 @@
-# Containerfile for fedora-43 gce
-FROM quay.io/fedora/fedora-bootc:43
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
     "@cloud-server-environment" \
@@ -23,5 +23,3 @@ RUN dnf install -y --skip-unavailable \
     rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["console=tty1 console=ttyS0,115200n8 systemd.firstboot=off no_timer-check"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
-
-COPY $CONTAINERFILE /root/Containerfile

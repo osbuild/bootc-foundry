@@ -1,7 +1,7 @@
-# Containerfile for centos-10 azure x86_64
-FROM quay.io/centos-bootc/centos-bootc:stream10
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y \
 	"@Server" \

@@ -1,7 +1,7 @@
-# Containerfile for fedora-43 ec2
-FROM quay.io/fedora/fedora-bootc:43
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
     "@cloud-server-environment" \
@@ -28,5 +28,3 @@ RUN systemctl enable \
     "cloud-config.service" \
     "cloud-init-local.service" \
     "cloud-final.service"
-
-COPY $CONTAINERFILE /root/Containerfile

@@ -1,7 +1,7 @@
-# Containerfile for centos-9 azure
-FROM quay.io/centos-bootc/centos-bootc:stream9
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
 	"cloud-init" \
@@ -61,5 +61,3 @@ RUN systemctl enable \
     "nm-cloud-setup.timer" \
     "sshd" \
     "waagent"
-
-COPY $CONTAINERFILE /root/Containerfile

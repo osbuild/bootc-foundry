@@ -1,7 +1,7 @@
-# Containerfile for centos-9 ec2
-FROM quay.io/centos-bootc/centos-bootc:stream9
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
 	"cloud-init" \
@@ -45,5 +45,3 @@ RUN systemctl enable \
     "reboot.target" \
     "sshd" \
     "tuned"
-
-COPY $CONTAINERFILE /root/Containerfile

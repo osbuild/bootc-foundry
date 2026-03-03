@@ -1,7 +1,7 @@
-# Containerfile for centos-9 qcow2
-FROM quay.io/centos-bootc/centos-bootc:stream9
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
 	"cloud-init" \
@@ -44,6 +44,3 @@ RUN dnf install -y --skip-unavailable \
     rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml
-
-
-COPY $CONTAINERFILE /root/Containerfile

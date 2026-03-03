@@ -1,7 +1,7 @@
-# Containerfile for centos-9 gce
-FROM quay.io/centos-bootc/centos-bootc:stream9
+FROM .
 
 ARG CONTAINERFILE
+COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \
 	"@core" \
@@ -44,5 +44,3 @@ RUN systemctl enable \
     "rngd" \
     "sshd" && \
     systemctl disable "reboot.target" "sshd-keygen@"
-
-COPY $CONTAINERFILE /root/Containerfile
