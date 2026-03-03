@@ -1,4 +1,3 @@
-# CI/CD build configuration. Key "images" is a list for easy extension with more OSes.
 images:
   - id: fedora
     from_image: quay.io/fedora/fedora-bootc

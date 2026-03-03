@@ -10,28 +10,31 @@ are used by image builder.
 * GCE
 * qcow2
 
-## Supported bootable containers
+## Supported bootable container base images
 
-* `quay.io/fedora/fedora-bootc` (`x86_64`, `aarch64`)
+* `quay.io/fedora/fedora-bootc` versions N and N-1 (`x86_64`, `aarch64`)
+* `quay.io/centos-bootc/centos-bootc` versions Stream 9 and 10 (`x86_64`, `aarch64`)
 
 ## Building Containerfiles
 
-Use `make` to build Containerfiles from templates. Go is required in order to
-build a small templating command that processes the templates. Python Jinja2
-templating module must be installed:
+All Containerfiles in this repo have `FROM` verb set to `.` which will fail to
+build without `--from` argument for podman or buildah. Additionally,
+`CONTAINERFILE` variable must be provided:
 
-    dnf -y install python3-jinja2
+    buildah build \
+        --from quay.io/fedora/fedora-bootc:43 \
+        --build-arg CONTAINERFILE="Containerfile.xxx" \
+        -f "Containerfile.xxx" \
+        -t my-image .
 
-## Building container images
+All required files are kept in [`resources/`](resources/) directory.
 
-Push the changes into this repository, GitHub Actions will build and publish new
-versions of container images. Daily rebuild is scheduled for every morning
-(CET).
+The Containerfile itself, alongside with all required resource files, is
+embedded within in `/root` directory.
 
-GitHub Actions use `ghcr.io` as a cache registry to speed up builds do base
-images does not need to be pulled from `quay.io` everytime.
+## Publishing container images
 
-## Available images
+Images are available as multi-arch image manifests with the following URIs:
 
 Fedora (`x86_64`, `aarch64`)
 
@@ -40,7 +43,36 @@ Fedora (`x86_64`, `aarch64`)
 * `quay.io/osbuild/fedora-bootc:43-gce`
 * `quay.io/osbuild/fedora-bootc:43-qcow2`
 
-## Building images
+CentOS 9 Stream (`x86_64`, `aarch64`)
+
+* `quay.io/osbuild/centos-bootc:stream9-ec2`
+* `quay.io/osbuild/centos-bootc:stream9-azure`
+* `quay.io/osbuild/centos-bootc:stream9-gce`
+* `quay.io/osbuild/centos-bootc:stream9-qcow2`
+
+CentOS 10 Stream (`x86_64`, `aarch64`)
+
+* `quay.io/osbuild/centos-bootc:stream10-ec2`
+* `quay.io/osbuild/centos-bootc:stream10-azure`
+* `quay.io/osbuild/centos-bootc:stream10-gce`
+* `quay.io/osbuild/centos-bootc:stream10-qcow2`
+
+Derived images are automatically rebuilt after every push. Daily rebuild is
+scheduled for every morning (CET).
+
+## CICD
+
+Building, manifest creation, and pushing are handled by a GitHub Action. Because
+the configuration matrix is large, it is generated using the `gen-cicd.py`
+script from [`config.yaml`](config.yaml).
+
+No cross-arch build is currently done since only x86_64 and aarch64 are
+supported and these are all available on GitHub.
+
+GitHub Actions use `ghcr.io` as a cache registry to speed up builds do base
+images does not need to be pulled from `quay.io` everytime.
+
+## Using derived images
 
 ```
 image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-ec2 --bootc-default-fs ext4 ami
@@ -49,9 +81,11 @@ image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-gce --boo
 image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-qcow2 --bootc-default-fs ext4 qcow2
 ```
 
+## LICENSE
+
+Apache License 2.0
+
 ## TODO
 
-* Supported OSes: Fedora N, N-1, Stream 9/10, RHEL latest (10.2/9.8 downstream only)
-* Use `--from` to have less Containefiles (not too much useful at this point)
-* Figure out a good comment for all Containerfile explaining to end users what to do
-* Try all the images above
+* Fix `FROM .` in the embedded Containerfile
+* Prepend some good comment for embedded Containerfile explaining to end users what to do
