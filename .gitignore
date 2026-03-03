@@ -1,3 +1,4 @@
+.github/matrices/
 __pycache__/
 *.pyc
 *.pyo

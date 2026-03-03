@@ -1,0 +1,25 @@
+# CI/CD build configuration. Key "images" is a list for easy extension with more OSes.
+images:
+  - id: fedora
+    from_image: quay.io/fedora/fedora-bootc
+    from_tag: "43"
+    to_image: quay.io/osbuild/fedora-bootc
+    to_tag_prefix: "43"
+    arches: [x86_64, aarch64]
+    types: [qcow2, ec2, azure, gce]
+
+  - id: el9
+    from_image: quay.io/centos-bootc/centos-bootc
+    from_tag: stream9
+    to_image: quay.io/osbuild/centos-bootc
+    to_tag_prefix: stream9
+    arches: [x86_64, aarch64]
+    types: [qcow2, ec2, azure, gce]
+
+  - id: el10
+    from_image: quay.io/centos-bootc/centos-bootc
+    from_tag: stream10
+    to_image: quay.io/osbuild/centos-bootc
+    to_tag_prefix: stream10
+    arches: [x86_64, aarch64]
+    types: [qcow2, ec2, azure, gce]
