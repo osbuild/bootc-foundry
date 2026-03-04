@@ -15,7 +15,7 @@ env:
   FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.sha }}
 
 jobs:
-  build:
+  build-container:
     name: build
     runs-on: ubuntu-latest
     steps:
@@ -29,10 +29,10 @@ jobs:
 
       - name: Log in to registry.redhat.io
         env:
-          RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
-          RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
+          RHSM_ORG: ${{ secrets.RHSM_ORG }}
+          RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
         run: |
-          echo "$RHSM_PASSWORD" | podman login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
+          echo "$RHSM_ACTIVATIONKEY" | podman login -u "$RHSM_ORG" --password-stdin registry.redhat.io
 
       - name: Build foundry image
         run: |
@@ -45,9 +45,9 @@ jobs:
         run: podman push "$FOUNDRY_IMAGE"
 
   run-matrix:
-    name: run-${{ matrix.rhel }}
+    name: build-rhel-${{ matrix.rhel }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-container
     strategy:
       fail-fast: false
       matrix:
@@ -72,16 +72,16 @@ jobs:
 
       - name: Register RHSM and run matrix build
         env:
-          RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
-          RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
+          RHSM_ORG: ${{ secrets.RHSM_ORG }}
+          RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
         run: |
           podman run --rm --privileged \
-            -e RHSM_USERNAME -e RHSM_PASSWORD \
+            -e RHSM_ORG -e RHSM_ACTIVATIONKEY \
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
               trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
-              subscription-manager register --username "$RHSM_USERNAME" --password "$RHSM_PASSWORD" || true
-              echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
+              subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
+              echo "$RHSM_ACTIVATIONKEY" | buildah login -u "$RHSM_ORG" --password-stdin registry.redhat.io
               make && ./${{ matrix.script }} ${{ matrix.image_tag }}
             '
