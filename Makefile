@@ -7,7 +7,7 @@ matrix:
 
 .PHONY: cleanup
 cleanup:
-	rm -f .github/matrices/build-matrix.json .github/matrices/manifest-matrix.json matrix-*.sh
+	rm -f Containerfile .github/matrices/build-matrix.json .github/matrices/manifest-matrix.json matrix-*.sh
 
 # Lint shell scripts and YAML files
 .PHONY: lint

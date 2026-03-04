@@ -20,14 +20,26 @@ echo "Creating manifest for $IMAGE:$TAG"
 buildah manifest rm "$IMAGE:$TAG" 2>/dev/null || true
 buildah manifest create "$IMAGE:$TAG"
 
+# When credentials are missing we're running locally: images exist only in local storage.
+# When credentials are set (e.g. GHA) we're in CI: images were pushed by build jobs, use remote refs.
+USE_REMOTE_REFS=
+if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
+  USE_REMOTE_REFS=1
+fi
+
 for arch in $ARCHES; do
   if [ -n "${USE_CACHE:-}" ]; then
     echo "Pulling $CACHE_URL:$TAG-$arch from cache"
     buildah pull "docker://$CACHE_URL:$TAG-$arch" 2>/dev/null || true
   fi
 
-  echo "Adding $IMAGE:$TAG-$arch to manifest"
-  buildah manifest add "$IMAGE:$TAG" "docker://$IMAGE:$TAG-$arch"
+  if [ -n "${USE_REMOTE_REFS:-}" ]; then
+    echo "Adding $IMAGE:$TAG-$arch to manifest (remote)"
+    buildah manifest add "$IMAGE:$TAG" "docker://$IMAGE:$TAG-$arch"
+  else
+    echo "Adding $IMAGE:$TAG-$arch to manifest (local)"
+    buildah manifest add "$IMAGE:$TAG" "$IMAGE:$TAG-$arch"
+  fi
 done
 
 echo "Pushing manifest to $IMAGE:$TAG"
