@@ -1,8 +1,7 @@
 FROM quay.io/osbuild/centos-bootc
 
 ARG CONTAINERFILE
-ARG UPSTREAMTAG
-COPY $CONTAINERFILE /root/Containerfile && sed -i "s|^FROM \(.*\)|FROM \1:$UPSTREAMTAG|" /root/Containerfile
+COPY $CONTAINERFILE /root/Containerfile
 
 COPY --chown=root:root --chmod=0644 resources/google-cloud-el10.repo /etc/yum.repos.d/google-cloud-el10.repo
 RUN ln -s /etc/yum.repos.d/google-cloud-el10.repo /root/google-cloud-el10.repo
