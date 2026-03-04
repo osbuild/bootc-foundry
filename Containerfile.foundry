@@ -12,3 +12,5 @@ RUN dnf install -y \
 
 WORKDIR /workspace
 COPY . /workspace
+
+RUN make matrix

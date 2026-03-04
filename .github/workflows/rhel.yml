@@ -78,15 +78,16 @@ jobs:
           RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
           STORAGE_DRIVER: overlay
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
+          BUILDAH_ISOLATION: chroot
         run: |
           podman run --rm --privileged \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
-            -e STORAGE_DRIVER -e STORAGE_OPTS \
+            -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
               trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
               subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
               echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
-              make && ./${{ matrix.script }} ${{ matrix.image_tag }}
+              ./${{ matrix.script }} ${{ matrix.image_tag }}
             '
