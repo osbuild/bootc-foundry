@@ -29,10 +29,10 @@ jobs:
 
       - name: Log in to registry.redhat.io
         env:
-          RHSM_ORG: ${{ secrets.RHSM_ORG }}
-          RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
+          RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
+          RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
         run: |
-          echo "$RHSM_ACTIVATIONKEY" | podman login -u "$RHSM_ORG" --password-stdin registry.redhat.io
+          echo "$RHSM_PASSWORD" | podman login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
 
       - name: Build foundry image
         run: |
@@ -74,14 +74,16 @@ jobs:
         env:
           RHSM_ORG: ${{ secrets.RHSM_ORG }}
           RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
+          RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
+          RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
         run: |
           podman run --rm --privileged \
-            -e RHSM_ORG -e RHSM_ACTIVATIONKEY \
+            -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
               trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
               subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
-              echo "$RHSM_ACTIVATIONKEY" | buildah login -u "$RHSM_ORG" --password-stdin registry.redhat.io
+              echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
               make && ./${{ matrix.script }} ${{ matrix.image_tag }}
             '
