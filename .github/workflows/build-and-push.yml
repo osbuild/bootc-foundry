@@ -17,9 +17,25 @@ env:
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install lint dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y shellcheck yamllint
+
+      - name: Lint
+        run: make lint
+
   generate-matrices:
     name: generate-matrices
     runs-on: ubuntu-latest
+    needs: lint
     outputs:
       build_matrix: ${{ steps.write.outputs.build_matrix }}
       manifest_matrix: ${{ steps.write.outputs.manifest_matrix }}
