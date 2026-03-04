@@ -4,7 +4,8 @@ baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el9-x8
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg
 
 [google-cloud-cli]
 name=Google Cloud CLI
@@ -12,4 +13,5 @@ baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key-v10.gpg
