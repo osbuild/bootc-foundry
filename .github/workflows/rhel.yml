@@ -70,6 +70,12 @@ jobs:
       - name: Pull foundry image
         run: podman pull "${{ env.FOUNDRY_IMAGE }}"
 
+      - name: Cache buildah storage
+        uses: actions/cache@v4
+        with:
+          path: storage-${{ matrix.rhel }}
+          key: buildah-rhel-${{ matrix.rhel }}
+
       - name: Register RHSM and run matrix build
         env:
           RHSM_ORG: ${{ secrets.RHSM_ORG }}
@@ -80,8 +86,11 @@ jobs:
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
+          mkdir -p storage-${{ matrix.rhel }}
+          chmod 777 storage-${{ matrix.rhel }}
           podman run --rm --privileged \
             --security-opt label=disable --security-opt seccomp=unconfined \
+            -v "${{ github.workspace }}/storage-${{ matrix.rhel }}:/var/lib/containers/storage" \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
             -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
             "${{ env.FOUNDRY_IMAGE }}" \
