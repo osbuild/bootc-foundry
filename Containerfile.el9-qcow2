@@ -1,6 +1,6 @@
 FROM quay.io/osbuild/centos-bootc
 
-ARG CONTAINERFILE
+ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y \

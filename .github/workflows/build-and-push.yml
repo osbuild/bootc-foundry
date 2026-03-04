@@ -60,26 +60,12 @@ jobs:
           sudo apt-get -qq update
           sudo apt-get -qq install -y buildah
 
-      - name: Login to container registry
+      - name: Build and push image
         env:
           REPO_USERNAME: ${{ secrets.REPO_USERNAME }}
           REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
-        run: |
-          if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
-            echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
-          else
-            echo "No registry credentials; push may fail"
-          fi
-
-      - name: Login to ghcr.io
-        env:
           CACHE_USERNAME: ${{ github.actor }}
           CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io
-
-      - name: Build and push image
-        env:
           TO_IMAGE: ${{ matrix.to_image }}
           CACHE_URL: ${{ env.CACHE_URL }}
           TO_TAG: ${{ matrix.to_tag }}
@@ -87,19 +73,7 @@ jobs:
           CONTAINERFILE: ${{ matrix.containerfile }}
           FROM_IMAGE: ${{ matrix.from_image }}
           FROM_TAG: ${{ matrix.from_tag }}
-        run: |
-          IMAGE="$TO_IMAGE:$TO_TAG-$ARCH"
-          CACHE_IMAGE="$CACHE_URL:$TO_TAG-$ARCH"
-          buildah pull "$CACHE_IMAGE" 2>/dev/null || true
-          buildah rmi "$IMAGE" 2>/dev/null || true
-          sed -i "s|^FROM \(.*\)|FROM \1:$FROM_TAG|" "Containerfile.$CONTAINERFILE"
-          buildah build --layers --arch="$ARCH" \
-            --build-arg CONTAINERFILE="Containerfile.$CONTAINERFILE" \
-            --from "$FROM_IMAGE:$FROM_TAG" \
-            -f "Containerfile.$CONTAINERFILE" \
-            -t "$IMAGE" .
-          buildah push "$IMAGE"
-          buildah push "$IMAGE" "$CACHE_IMAGE"
+        run: ./build-and-push.sh
 
   generate-manifests:
     name: mf-${{ matrix.tag }}
@@ -109,40 +83,22 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-matrices.outputs.manifest_matrix) }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Install Buildah
         run: |
           sudo apt-get -qq update
           sudo apt-get -qq install -y buildah
 
-      - name: Login to container registry
+      - name: Create and push multi-arch manifest
         env:
           REPO_USERNAME: ${{ secrets.REPO_USERNAME }}
           REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
-        run: |
-          if [ -n "$REPO_USERNAME" ] && [ -n "$REPO_PASSWORD" ]; then
-            echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
-          else
-            echo "No registry credentials; push may fail"
-          fi
-
-      - name: Login to ghcr.io
-        env:
           CACHE_USERNAME: ${{ github.actor }}
           CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io
-
-      - name: Create and push multi-arch manifest
-        env:
           IMAGE: ${{ matrix.image }}
           TAG: ${{ matrix.tag }}
           ARCHES: ${{ matrix.arches }}
           CACHE_URL: ${{ env.CACHE_URL }}
-        run: |
-          echo "Creating manifest for $IMAGE:$TAG"
-          buildah manifest rm "$IMAGE:$TAG" 2>/dev/null || true
-          buildah manifest create "$IMAGE:$TAG"
-          for arch in $ARCHES; do
-            buildah manifest add "$IMAGE:$TAG" "docker://$CACHE_URL:$TAG-$arch"
-          done
-          buildah manifest push --all "$IMAGE:$TAG" "docker://$IMAGE:$TAG"
+        run: ./generate-manifests.sh

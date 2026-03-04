@@ -87,4 +87,7 @@ Apache License 2.0
 
 ## TODO
 
-* Prepend some good comment for embedded Containerfile explaining to end users what to do
+* Make this repo a Container (UBI10) with required tools
+* Use these scripts to build rhel9/10 images, create a GHA job that will test this
+* Create an ENTRYFILE that will build and push the same (so we can run it in a RHOS job)
+* Looks like /root/resources directory is missing (so symlinks are incorrect)

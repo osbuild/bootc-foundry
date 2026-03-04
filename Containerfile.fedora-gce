@@ -1,6 +1,6 @@
 FROM quay.io/fedora/fedora-bootc
 
-ARG CONTAINERFILE
+ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
 
 RUN dnf install -y --skip-unavailable \

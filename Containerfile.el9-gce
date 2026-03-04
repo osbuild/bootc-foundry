@@ -1,6 +1,6 @@
 FROM quay.io/osbuild/centos-bootc
 
-ARG CONTAINERFILE
+ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
 
 COPY --chown=root:root --chmod=0644 resources/google-cloud-el9.repo /etc/yum.repos.d/google-cloud-el9.repo
