@@ -81,11 +81,13 @@ jobs:
           BUILDAH_ISOLATION: chroot
         run: |
           podman run --rm --privileged \
+            --security-opt label=disable --security-opt seccomp=unconfined \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
             -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
+              echo "BUILDAH_ISOLATION: $BUILDAH_ISOLATION"
               trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
               subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
               echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
