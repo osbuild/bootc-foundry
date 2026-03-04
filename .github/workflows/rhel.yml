@@ -88,7 +88,8 @@ jobs:
         run: |
           mkdir -p storage-${{ matrix.rhel }}
           chmod 777 storage-${{ matrix.rhel }}
-          podman run --rm --privileged \
+          podman run --rm --privileged --cap-add SYS_ADMIN \
+            -v /dev:/dev:rw -v /sys:/sys:rw --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
             -v "${{ github.workspace }}/storage-${{ matrix.rhel }}:/var/lib/containers/storage" \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
