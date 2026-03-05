@@ -5,6 +5,7 @@ set -euo pipefail
 #   REPO_USERNAME, REPO_PASSWORD  - quay.io login (optional; no push if missing)
 #   CACHE_URL, CACHE_USERNAME, CACHE_PASSWORD - optional; all three required for cache pull
 #   IMAGE, TAG, ARCHES - manifest params (ARCHES is space-separated)
+#   DRY_RUN - when set, skip manifest push (e.g. set for PR builds)
 
 if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
   echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
@@ -43,8 +44,8 @@ for arch in $ARCHES; do
 done
 
 echo "Pushing manifest to $IMAGE:$TAG"
-if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
+if [ -z "${DRY_RUN:-}" ] && [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
   buildah manifest push --all "$IMAGE:$TAG" "docker://$IMAGE:$TAG"
 else
-  echo "Push skipped: REPO_USERNAME or REPO_PASSWORD missing"
+  echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi

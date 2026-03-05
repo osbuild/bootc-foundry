@@ -14,6 +14,7 @@ permissions:
   packages: write
 
 env:
+  DRY_RUN: ${{ github.event_name == 'pull_request' && '1' || '' }}
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
