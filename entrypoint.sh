@@ -3,7 +3,12 @@ set -xeuo pipefail
 
 cd "$(dirname "$0")"
 
-trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
+cleanup() {
+  exit_code=$?
+  subscription-manager unregister || true
+  exit "$exit_code"
+}
+trap cleanup EXIT
 
 subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
 

@@ -14,6 +14,7 @@ permissions:
 env:
   FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha }}
   FOUNDRY_IMAGE_HEAD: ghcr.io/${{ github.repository }}/foundry:latest
+  # private cache registry
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
