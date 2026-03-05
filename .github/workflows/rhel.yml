@@ -14,6 +14,7 @@ permissions:
 env:
   FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.sha }}
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
+  FOUNDRY_CACHE_IMAGE: ghcr.io/${{ github.repository }}/cache:foundry
 
 jobs:
   build-container:
@@ -35,15 +36,24 @@ jobs:
         run: |
           echo "$RHSM_PASSWORD" | podman login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
 
-      - name: Build foundry image
-        run: |
-          podman build -f Containerfile.foundry -t "$FOUNDRY_IMAGE" .
-
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
 
+      - name: Pull foundry cache image
+        run: podman pull "${{ env.FOUNDRY_CACHE_IMAGE }}" 2>/dev/null || true
+
+      - name: Build foundry image
+        run: |
+          podman build \
+            --cache-from "${{ env.FOUNDRY_CACHE_IMAGE }}" \
+            -f Containerfile.foundry \
+            -t "${{ env.FOUNDRY_IMAGE }}" \
+            -t "${{ env.FOUNDRY_CACHE_IMAGE }}" .
+
       - name: Push foundry image
-        run: podman push "$FOUNDRY_IMAGE"
+        run: |
+          podman push "${{ env.FOUNDRY_IMAGE }}"
+          podman push "${{ env.FOUNDRY_CACHE_IMAGE }}"
 
   run-matrix:
     name: build-rhel-${{ matrix.rhel }}
