@@ -62,10 +62,10 @@ jobs:
         include:
           - rhel: "9"
             script: matrix-rhel9.sh
-            image_tag: rhel-bootc:9
+            tag_suffix: rhel-bootc-9
           - rhel: "10"
             script: matrix-rhel10.sh
-            image_tag: rhel-bootc:10
+            tag_suffix: rhel-bootc-10
     steps:
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
@@ -94,13 +94,16 @@ jobs:
           RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
           RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
           RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
-          CACHE_URL: ${{ env.CACHE_URL }}
+          REPO_USERNAME: ${{ github.actor }}
+          REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           CACHE_USERNAME: ${{ github.actor }}
           CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          CACHE_URL: ${{ env.CACHE_URL }}
           STORAGE_DRIVER: overlay
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
+          IMAGE="$CACHE_URL:${{ matrix.tag_suffix }}"
           sudo podman run --rm --privileged --cap-add all --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
             -e "RHSM_ORG=$RHSM_ORG" -e "RHSM_ACTIVATIONKEY=$RHSM_ACTIVATIONKEY" \
@@ -108,4 +111,4 @@ jobs:
             -e "CACHE_URL=$CACHE_URL" -e "CACHE_USERNAME=$CACHE_USERNAME" -e "CACHE_PASSWORD=$CACHE_PASSWORD" \
             -e "STORAGE_DRIVER=$STORAGE_DRIVER" -e "STORAGE_OPTS=$STORAGE_OPTS" -e "BUILDAH_ISOLATION=$BUILDAH_ISOLATION" \
             "${{ env.FOUNDRY_IMAGE }}" \
-            ${{ matrix.script }} ${{ matrix.image_tag }}
+            ${{ matrix.script }} "$IMAGE"
