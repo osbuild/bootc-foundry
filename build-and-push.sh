@@ -30,12 +30,8 @@ cp "Containerfile.comment" "Containerfile"
 echo "FROM ${FROM_REF}" >> "Containerfile"
 tail -n +2 "Containerfile.${CONTAINERFILE}" >> "Containerfile"
 
-if [ -n "${BUILDAH_ISOLATION:-}" ]; then
-  EXTRA_BUILD_ARGS="--isolation=$BUILDAH_ISOLATION"
-fi
-
 echo "Building $IMAGE"
-buildah build $EXTRA_BUILD_ARGS --layers --arch="$ARCH" \
+buildah build --layers --arch="$ARCH" \
   --build-arg CONTAINERFILE="Containerfile" \
   --from "${FROM_REF}" \
   -f "Containerfile.${CONTAINERFILE}" \
