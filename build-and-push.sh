@@ -19,6 +19,7 @@ fi
 IMAGE="${TO_IMAGE}:${TO_TAG}-${ARCH}"
 if [ -n "${USE_CACHE:-}" ]; then
   CACHE_IMAGE="${CACHE_URL}:${TO_TAG}-${ARCH}"
+  echo "Pulling cache image $CACHE_IMAGE"
   buildah pull "$CACHE_IMAGE" 2>/dev/null || true
 fi
 buildah rmi "$IMAGE" 2>/dev/null || true

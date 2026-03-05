@@ -67,6 +67,16 @@ jobs:
             script: matrix-rhel10.sh
             image_tag: rhel-bootc:10
     steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
       - name: Install Podman
         run: |
           sudo apt-get -qq update
@@ -91,7 +101,7 @@ jobs:
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
-          podman run --rm --privileged --cap-add all --device /dev/fuse:rw \
+          sudo podman run --rm --privileged --cap-add all --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
             -e CACHE_URL -e CACHE_USERNAME -e CACHE_PASSWORD \
@@ -99,7 +109,6 @@ jobs:
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
-              umount /dev/mqueue || true
               trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
               subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
               echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
