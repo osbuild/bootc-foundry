@@ -13,6 +13,7 @@ permissions:
 
 env:
   FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.sha }}
+  CACHE_URL: ghcr.io/${{ github.repository }}/cache
 
 jobs:
   build-container:
@@ -72,31 +73,25 @@ jobs:
       - name: Pull foundry image
         run: podman pull "${{ env.FOUNDRY_IMAGE }}"
 
-      - name: Cache base image
-        uses: actions/cache@v4
-        with:
-          path: skopeo-cache-rhel-${{ matrix.rhel }}
-          key: skopeo-cache-rhel-${{ matrix.rhel }}
-
       - name: Register RHSM and run matrix build
         env:
           RHSM_ORG: ${{ secrets.RHSM_ORG }}
           RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
           RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
           RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
-          CACHE_ARCHIVE: /cache/skopeo-cache-rhel-${{ matrix.rhel }}.tar
+          CACHE_URL: ${{ env.CACHE_URL }}
+          CACHE_USERNAME: ${{ github.actor }}
+          CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           STORAGE_DRIVER: overlay
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
-          mkdir -p skopeo-cache-rhel-${{ matrix.rhel }}
-          chmod 777 skopeo-cache-rhel-${{ matrix.rhel }}
           podman run --rm --privileged --cap-add all \
             -v /dev:/dev:rw -v /sys:/sys:rw --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
-            -v "${{ github.workspace }}/skopeo-cache-rhel-${{ matrix.rhel }}:/cache:rw" \
             -e RHSM_ORG -e RHSM_ACTIVATIONKEY -e RHSM_USERNAME -e RHSM_PASSWORD \
-            -e CACHE_ARCHIVE -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
+            -e CACHE_URL -e CACHE_USERNAME -e CACHE_PASSWORD \
+            -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
             "${{ env.FOUNDRY_IMAGE }}" \
             sh -c '
               set -e
@@ -105,4 +100,3 @@ jobs:
               echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
               ./${{ matrix.script }} ${{ matrix.image_tag }}
             '
-          sudo chown -R "$USER" skopeo-cache-rhel-${{ matrix.rhel }}
