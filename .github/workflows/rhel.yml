@@ -107,10 +107,4 @@ jobs:
             -e CACHE_URL -e CACHE_USERNAME -e CACHE_PASSWORD \
             -e STORAGE_DRIVER -e STORAGE_OPTS -e BUILDAH_ISOLATION \
             "${{ env.FOUNDRY_IMAGE }}" \
-            sh -c '
-              set -e
-              trap "e=\$?; subscription-manager unregister || true; exit \$e" EXIT
-              subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
-              echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
-              ./${{ matrix.script }} ${{ matrix.image_tag }}
-            '
+            ${{ matrix.script }} ${{ matrix.image_tag }}
