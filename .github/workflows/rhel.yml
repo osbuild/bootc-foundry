@@ -83,10 +83,10 @@ jobs:
           sudo apt-get -qq install -y podman
 
       - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login -u "${{ github.actor }}" --password-stdin ghcr.io
 
       - name: Pull foundry image
-        run: podman pull "${{ env.FOUNDRY_IMAGE }}"
+        run: sudo podman pull "${{ env.FOUNDRY_IMAGE }}"
 
       - name: Register RHSM and run matrix build
         env:
