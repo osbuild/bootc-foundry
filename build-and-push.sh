@@ -5,6 +5,7 @@ set -euo pipefail
 #   REPO_USERNAME, REPO_PASSWORD  - optional; quay.io login (if missing, skips all push)
 #   CACHE_URL, CACHE_USERNAME, CACHE_PASSWORD - optional; all three required for any cache use
 #   TO_IMAGE, TO_TAG, ARCH, CONTAINERFILE, FROM_IMAGE, FROM_TAG - build params
+#   DRY_RUN - when set, skip all push operations (e.g. set for PR builds)
 
 if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
   echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
@@ -37,12 +38,14 @@ buildah build --layers --arch="$ARCH" \
   -f "Containerfile.${CONTAINERFILE}" \
   -t "$IMAGE" .
 
-if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
+if [ -z "${DRY_RUN:-}" ] && [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
   buildah push "$IMAGE"
 else
-  echo "Push skipped: REPO_USERNAME or REPO_PASSWORD missing"
+  echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi
 
-if [ -n "${USE_CACHE:-}" ]; then
+if [ -z "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
   buildah push "$IMAGE" "$CACHE_IMAGE"
+elif [ -n "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
+  echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi
