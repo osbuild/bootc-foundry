@@ -55,12 +55,10 @@ jobs:
           - rhel: "9"
             script: matrix-rhel9.sh
             image_tag: rhel-bootc:9
-            from_image: registry.redhat.io/rhel9/rhel-bootc
             from_tag: "9.7"
           - rhel: "10"
             script: matrix-rhel10.sh
             image_tag: rhel-bootc:10
-            from_image: registry.redhat.io/rhel10/rhel-bootc
             from_tag: "10.1"
     steps:
       - name: Install Podman
@@ -78,7 +76,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: skopeo-cache-rhel-${{ matrix.rhel }}
-          key: skopeo-rhel-${{ matrix.rhel }}-${{ matrix.from_tag }}
+          key: skopeo-cache-rhel-${{ matrix.rhel }}
 
       - name: Register RHSM and run matrix build
         env:
@@ -86,14 +84,14 @@ jobs:
           RHSM_ACTIVATIONKEY: ${{ secrets.RHSM_ACTIVATIONKEY }}
           RHSM_USERNAME: ${{ secrets.RHSM_USERNAME }}
           RHSM_PASSWORD: ${{ secrets.RHSM_PASSWORD }}
-          CACHE_ARCHIVE: /cache/base-${{ matrix.from_tag }}.tar
+          CACHE_ARCHIVE: /cache/skopeo-cache-rhel-${{ matrix.rhel }}.tar
           STORAGE_DRIVER: overlay
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
           mkdir -p skopeo-cache-rhel-${{ matrix.rhel }}
           chmod 777 skopeo-cache-rhel-${{ matrix.rhel }}
-          podman run --rm --privileged --cap-add SYS_ADMIN \
+          podman run --rm --privileged --cap-add all \
             -v /dev:/dev:rw -v /sys:/sys:rw --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
             -v "${{ github.workspace }}/skopeo-cache-rhel-${{ matrix.rhel }}:/cache:rw" \
