@@ -15,3 +15,5 @@ WORKDIR /workspace
 COPY . /workspace
 
 RUN make matrix
+
+ENTRYPOINT ["/workspace/entrypoint.sh"]
