@@ -12,9 +12,9 @@ permissions:
   packages: write
 
 env:
-  FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.sha }}
+  FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha }}
+  FOUNDRY_IMAGE_HEAD: ghcr.io/${{ github.repository }}/foundry:latest
   CACHE_URL: ghcr.io/${{ github.repository }}/cache
-  FOUNDRY_CACHE_IMAGE: ghcr.io/${{ github.repository }}/cache:foundry
 
 jobs:
   build-container:
@@ -39,21 +39,18 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
 
-      - name: Pull foundry cache image
-        run: podman pull "${{ env.FOUNDRY_CACHE_IMAGE }}" 2>/dev/null || true
+      - name: Pull foundry image (build cache from latest)
+        run: podman pull "${{ env.FOUNDRY_IMAGE_HEAD }}" 2>/dev/null || true
 
       - name: Build foundry image
         run: |
           podman build \
-            --cache-from "${{ env.FOUNDRY_CACHE_IMAGE }}" \
             -f Containerfile.foundry \
-            -t "${{ env.FOUNDRY_IMAGE }}" \
-            -t "${{ env.FOUNDRY_CACHE_IMAGE }}" .
+            -t "${{ env.FOUNDRY_IMAGE }}" .
 
       - name: Push foundry image
         run: |
           podman push "${{ env.FOUNDRY_IMAGE }}"
-          podman push "${{ env.FOUNDRY_CACHE_IMAGE }}"
 
   run-matrix:
     name: build-rhel-${{ matrix.rhel }}
@@ -66,11 +63,9 @@ jobs:
           - rhel: "9"
             script: matrix-rhel9.sh
             image_tag: rhel-bootc:9
-            from_tag: "9.7"
           - rhel: "10"
             script: matrix-rhel10.sh
             image_tag: rhel-bootc:10
-            from_tag: "10.1"
     steps:
       - name: Install Podman
         run: |
