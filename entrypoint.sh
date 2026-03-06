@@ -1,6 +1,13 @@
 #!/bin/bash
 set -xeuo pipefail
 
+#
+# This script runs generated shell scripts (see the Makefile).
+#
+# It can be also called with arguments, in that case these are used instead. This is used for
+# upstream build tests in GitHub Actions where each distribution is executed separately.
+#
+
 cd "$(dirname "$0")"
 
 cleanup() {
