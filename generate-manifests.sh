@@ -23,21 +23,21 @@ buildah manifest create "$IMAGE:$TAG"
 for arch in $ARCHES; do
   if [ -n "${USE_CACHE:-}" ]; then
     echo "Pulling $CACHE_IMAGE:$TAG-$arch from cache"
-    buildah pull "docker://$CACHE_IMAGE:$TAG-$arch" || true
+    time buildah pull "docker://$CACHE_IMAGE:$TAG-$arch" || true
   fi
 
   if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
     echo "Adding $IMAGE:$TAG-$arch to manifest (remote)"
-    buildah manifest add "$IMAGE:$TAG" "docker://$IMAGE:$TAG-$arch"
+    time buildah manifest add "$IMAGE:$TAG" "docker://$IMAGE:$TAG-$arch"
   else
     echo "Adding $IMAGE:$TAG-$arch to manifest (local)"
-    buildah manifest add "$IMAGE:$TAG" "$IMAGE:$TAG-$arch"
+    time buildah manifest add "$IMAGE:$TAG" "$IMAGE:$TAG-$arch"
   fi
 done
 
 echo "Pushing manifest to $IMAGE:$TAG"
 if [ -z "${DRY_RUN:-}" ] && [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
-  buildah manifest push --all "$IMAGE:$TAG" "docker://$IMAGE:$TAG"
+  time buildah manifest push --all "$IMAGE:$TAG" "docker://$IMAGE:$TAG"
 else
   echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi

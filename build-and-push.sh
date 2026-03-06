@@ -37,6 +37,7 @@ echo "Building $IMAGE"
 time buildah build --layers --arch="$ARCH" \
   --build-arg CONTAINERFILE="Containerfile" \
   --from "${FROM_REF}" \
+  --cache-from "$CACHE_REF" \
   -f "Containerfile" \
   -t "$IMAGE" .
 
