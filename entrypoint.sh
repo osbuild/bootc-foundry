@@ -17,9 +17,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
+if [ -n "${RHSM_ORG:-}" ] && [ -n "${RHSM_ACTIVATIONKEY:-}" ]; then
+  subscription-manager register --org "$RHSM_ORG" --activationkey "$RHSM_ACTIVATIONKEY" || true
+else
+  echo "Using subscription from the host system"
+fi
 
-echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
+if [ -n "${RHSM_USERNAME:-}" ] && [ -n "${RHSM_PASSWORD:-}" ]; then
+  echo "$RHSM_PASSWORD" | buildah login -u "$RHSM_USERNAME" --password-stdin registry.redhat.io
+else
+  echo "Using registry.redhat.io credentials from the host system"
+fi
 
 if [ -n "${1:-}" ]; then
   echo "Running custom script $1 with arguments: ${*:2}"

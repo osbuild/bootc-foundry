@@ -69,16 +69,6 @@ jobs:
             script: matrix-rhel10.sh
             tag_suffix: rhel-bootc-10
     steps:
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-
       - name: Install Podman
         run: |
           sudo apt-get -qq update
