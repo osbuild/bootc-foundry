@@ -23,7 +23,7 @@ buildah manifest create "$IMAGE:$TAG"
 for arch in $ARCHES; do
   if [ -n "${USE_CACHE:-}" ]; then
     echo "Pulling $CACHE_IMAGE:$TAG-$arch from cache"
-    buildah pull "docker://$CACHE_IMAGE:$TAG-$arch" 2>/dev/null || true
+    buildah pull "docker://$CACHE_IMAGE:$TAG-$arch" || true
   fi
 
   if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then

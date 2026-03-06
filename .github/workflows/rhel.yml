@@ -110,6 +110,7 @@ jobs:
             --security-opt label=disable --security-opt seccomp=unconfined \
             -e "RHSM_ORG=$RHSM_ORG" -e "RHSM_ACTIVATIONKEY=$RHSM_ACTIVATIONKEY" \
             -e "RHSM_USERNAME=$RHSM_USERNAME" -e "RHSM_PASSWORD=$RHSM_PASSWORD" \
+            -e "REPO_USERNAME=$REPO_USERNAME" -e "REPO_PASSWORD=$REPO_PASSWORD" \
             -e "CACHE_IMAGE=$CACHE_IMAGE" -e "CACHE_USERNAME=$CACHE_USERNAME" -e "CACHE_PASSWORD=$CACHE_PASSWORD" \
             -e "STORAGE_DRIVER=$STORAGE_DRIVER" -e "STORAGE_OPTS=$STORAGE_OPTS" -e "BUILDAH_ISOLATION=$BUILDAH_ISOLATION" \
             -e "DRY_RUN=$DRY_RUN" \
