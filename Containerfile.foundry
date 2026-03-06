@@ -1,5 +1,7 @@
 FROM registry.redhat.io/ubi10/buildah:latest
 
+ARG UPSTREAM
+
 USER root
 RUN dnf install -y \
     python3 \
@@ -8,9 +10,11 @@ RUN dnf install -y \
     skopeo \
     subscription-manager \
     git \
-    awscli2 \
     && dnf clean all \
     && rm -rf /var/cache/dnf
+
+# AppStream is only available when building this on a registered system (e.g. RHOS)
+RUN if [ -z "${UPSTREAM:-}" ]; then dnf install -y awscli2; fi
 
 WORKDIR /workspace
 COPY . /workspace

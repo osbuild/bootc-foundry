@@ -47,6 +47,7 @@ jobs:
       - name: Build foundry image
         run: |
           podman build \
+            --build-arg UPSTREAM="true" \
             -f Containerfile.foundry \
             -t "${{ env.FOUNDRY_IMAGE }}" .
 
