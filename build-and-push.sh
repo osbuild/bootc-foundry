@@ -13,6 +13,7 @@ set -euo pipefail
 #   DRY_RUN - when set, skip all push operations (e.g. set for PR builds)
 
 IMAGE="${TO_IMAGE}:${TO_TAG}-${ARCH}"
+export TO_REGISTRY=${TO_IMAGE%%/*}
 
 ./login.sh
 

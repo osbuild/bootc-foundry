@@ -118,7 +118,6 @@ def generate_build_id_sh(img: dict) -> str:
         "  exit 1",
         "fi",
         "",
-        "# --- Build phase (no cache) ---",
     ]
     for t in types:
         containerfile = f"{cf_suffix}-{t}"
@@ -130,7 +129,6 @@ def generate_build_id_sh(img: dict) -> str:
             lines.append("time ./build-and-push.sh")
             lines.append("")
 
-    lines.append("# --- Manifest phase ---")
     arches_str = " ".join(arches)
     for t in types:
         lines.append('export IMAGE="$TO_IMAGE" TAG="${TAG_PREFIX}-%s" ARCHES="%s"' % (shell_quote(t), shell_quote(arches_str)))
