@@ -29,11 +29,19 @@ else
   echo "Using registry.redhat.io credentials from the host system"
 fi
 
+IMAGE="rhel-bootc"
+if [ -n "${AWS_REGION:-}" ] && [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ] && [ -n "${ECR_URL:-}" ]; then
+  ECR_HOSTNAME=$(echo "$ECR_URL" | sed -e 's|^https://||' -e 's|^http://||')
+  echo "Logging in to $ECR_HOSTNAME"
+  aws ecr get-login-password --region "$AWS_REGION" | buildah login --username AWS --password-stdin "$ECR_HOSTNAME"
+  IMAGE="$ECR_HOSTNAME/$IMAGE"
+fi
+
 if [ -n "${1:-}" ]; then
   echo "Running custom script $1 with arguments: ${*:2}"
   ./"$1" "${@:2}"
 else
   echo "Running default build matrix"
-  ./matrix-rhel9.sh rhel-bootc:9
-  ./matrix-rhel10.sh rhel-bootc:10
+  ./matrix-rhel9.sh "$IMAGE:9"
+  ./matrix-rhel10.sh "$IMAGE:10"
 fi

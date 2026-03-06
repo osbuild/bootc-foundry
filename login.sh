@@ -4,10 +4,6 @@ set -xeuo pipefail
 if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
   echo "Logging in to $TO_REGISTRY"
   echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin "$TO_REGISTRY"
-elif [ -n "${AWS_REGION:-}" ] && [ -n "${AWS_ACCESS_KEY_ID:-}" ] && [ -n "${AWS_SECRET_ACCESS_KEY:-}" ] && [ -n "${ECR_URL:-}" ]; then
-  # Let's assume the ECR_URL from app-interface Vault is in fact not URL but hostname
-  echo "Logging in to $ECR_URL"
-  aws ecr get-login-password --region "$AWS_REGION" | buildah login --username AWS --password-stdin "$ECR_URL"
 fi
 
 USE_CACHE=

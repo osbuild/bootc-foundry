@@ -14,6 +14,7 @@ are used by image builder.
 
 * `quay.io/fedora/fedora-bootc` versions N and N-1 (`x86_64`, `aarch64`)
 * `quay.io/centos-bootc/centos-bootc` versions Stream 9 and 10 (`x86_64`, `aarch64`)
+* `registry.redhat.io/rhelXX/rhel-bootc` (9 and 10) (`x86_64`)
 
 ## Building Containerfiles
 
@@ -57,20 +58,29 @@ Images are available as multi-arch image manifests with the following URIs:
 * `quay.io/osbuild/centos-bootc:stream10-gce`
 * `quay.io/osbuild/centos-bootc:stream10-qcow2`
 
+Image Mode for RHEL 9/10 images are only built on CICD to ensure everything
+works, but not pushed anywhere. 
+
 Derived images are automatically rebuilt after every push. Daily rebuild is
 scheduled for every morning (CET).
 
 ## CICD
 
 Building, manifest creation, and pushing are handled by a GitHub Action. Because
-the configuration matrix is large, it is generated using the `gen-cicd.py`
-script from [`config.yaml`](config.yaml).
+the configuration matrix is large, it is generated using the `make matrix`
+command and it uses [`config.yaml`](config.yaml) as the input.
 
 No cross-arch build is currently done since only x86_64 and aarch64 are
 supported and these are all available on GitHub.
 
-GitHub Actions use `ghcr.io` as a cache registry to speed up builds do base
-images does not need to be pulled from `quay.io` everytime.
+GitHub Actions use `ghcr.io` as a cache registry to speed up pulls and builds
+because both `quay.io` and `registry.redhat.io` are hosted elsewhere. The cache
+registry is private.
+
+The generation script also creates `matrix-*.sh` shell scripts which are called
+from `entrypoint.sh` which is used on RHOS cron job for builds on our AWS EC2
+infra. This is used in `Container.foundry` which is containerized version of
+this repository with all the scripts and Containerfiles.
 
 ## Using derived images
 
@@ -84,9 +94,3 @@ image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-qcow2 --b
 ## LICENSE
 
 Apache License 2.0
-
-## TODO
-
-* Document RHEL builds
-* Add AWS credentials and client to login.sh
-* Looks like /root/resources directory is missing (so symlinks are incorrect)
