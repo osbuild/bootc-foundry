@@ -23,9 +23,11 @@ buildah rmi "$IMAGE" 2>/dev/null || true
 FROM_REF="${FROM_IMAGE}:${FROM_TAG}"
 echo "Preparing Containerfile with FROM ${FROM_REF}"
 cp "Containerfile.comment" "Containerfile"
-echo "FROM ${FROM_REF}" >> "Containerfile"
-echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "Containerfile"
-tail -n +2 "Containerfile.${CONTAINERFILE}" >> "Containerfile"
+{
+  echo "FROM ${FROM_REF}"
+  echo "ARG BUILD_DATE=$(date +%Y-%m-%d)"
+  tail -n +2 "Containerfile.${CONTAINERFILE}"
+} >> "Containerfile"
 
 if [ -n "${USE_CACHE:-}" ]; then
   CACHE_REF="${CACHE_IMAGE}:${TO_TAG}-${ARCH}"
