@@ -19,9 +19,7 @@ export TO_REGISTRY
 . ./login.sh
 
 if [ -n "${USE_CACHE:-}" ]; then
-  CACHE_IMAGE_FULL="${CACHE_IMAGE}:${TO_TAG}-${ARCH}"
-  echo "Pulling cache image $CACHE_IMAGE_FULL"
-  buildah pull "$CACHE_IMAGE_FULL" 2>/dev/null || true
+  CACHE_ARGS="--cache-from 'docker://$CACHE_IMAGE' --cache-to 'docker://$CACHE_IMAGE'"
 fi
 buildah rmi "$IMAGE" 2>/dev/null || true
 
@@ -32,7 +30,7 @@ echo "FROM ${FROM_REF}" >> "Containerfile"
 tail -n +2 "Containerfile.${CONTAINERFILE}" >> "Containerfile"
 
 echo "Building $IMAGE"
-buildah build --layers --arch="$ARCH" \
+buildah build --layers $CACHE_ARGS --arch="$ARCH" \
   --build-arg CONTAINERFILE="Containerfile" \
   --from "${FROM_REF}" \
   -f "Containerfile.${CONTAINERFILE}" \
@@ -42,10 +40,4 @@ if [ -z "${DRY_RUN:-}" ] && [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD
   buildah push "$IMAGE"
 else
   echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
-fi
-
-if [ -z "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
-  buildah push "$IMAGE" "$CACHE_IMAGE_FULL"
-elif [ -n "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
-  echo "Push to cache skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi
