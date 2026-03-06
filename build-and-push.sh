@@ -24,6 +24,7 @@ FROM_REF="${FROM_IMAGE}:${FROM_TAG}"
 echo "Preparing Containerfile with FROM ${FROM_REF}"
 cp "Containerfile.comment" "Containerfile"
 echo "FROM ${FROM_REF}" >> "Containerfile"
+echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "Containerfile"
 tail -n +2 "Containerfile.${CONTAINERFILE}" >> "Containerfile"
 
 if [ -n "${USE_CACHE:-}" ]; then
@@ -37,7 +38,7 @@ echo "Building $IMAGE"
 time buildah build --layers --arch="$ARCH" \
   --build-arg CONTAINERFILE="Containerfile" \
   --from "${FROM_REF}" \
-  --cache-from "$CACHE_REF" \
+  --cache-from "$CACHE_IMAGE" \
   -f "Containerfile" \
   -t "$IMAGE" .
 
