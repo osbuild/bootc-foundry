@@ -1,28 +1,32 @@
-FROM quay.io/fedora/fedora-bootc
+FROM quay.io/osbuild/centos-bootc
 
 ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
+COPY azure /root
 
-RUN dnf install -y --skip-unavailable \
-    "@cloud-server-environment" \
-    "btrfs-progs" \
-    "glibc-langpack-en" \
-    "python3-dnf-plugin-tracer" \
-    "qemu-guest-agent" \
-    --exclude="dracut-config-rescue" \
-    --exclude="firewalld" \
-    --exclude="fwupd" \
-    --exclude="geolite2-city" \
-    --exclude="geolite2-country" \
-    --exclude="plymouth" \
-    --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+RUN dnf -y install \
+	WALinuxAgent \
+	cloud-init \
+	cloud-utils-growpart \
+	gdisk \
+	hyperv-daemons && \
+	dnf clean all
 
-RUN echo 'kargs = ["console=tty1 console=ttyS0,115200n8 systemd.firstboot=off no_timer-check"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
+COPY azure/etc /etc
+COPY azure/usr /usr
+
+RUN <<EORUN
+chmod 0755 /usr/local/sbin/temp-disk-dataloss-warning
+
+echo 'ClientAliveInterval 180' >> /etc/ssh/sshd_config
+
+sed -i 's/Provisioning.Agent=auto/Provisioning.Agent=cloud-init/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.Format=y/ResourceDisk.Format=n/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.EnableSwap=y/ResourceDisk.EnableSwap=n/g' /etc/waagent.conf
+EORUN
 
 RUN systemctl enable \
-    "cloud-init-network.service" \
-    "cloud-config.service" \
-    "cloud-init-local.service" \
-    "cloud-final.service"
+	"NetworkManager.service" \
+	"cloud-init" \
+	"temp-disk-dataloss-warning.service" \
+	"waagent"

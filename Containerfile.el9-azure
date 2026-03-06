@@ -4,65 +4,29 @@ ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
 COPY azure /root
 
-RUN dnf install -y \
-	"cloud-init" \
-	"cloud-utils-growpart" \
-	"rsync" \
-	"@Server" \
-	"NetworkManager" \
-	"NetworkManager-cloud-setup" \
-	"WALinuxAgent" \
-	"azure-vm-utils" \
-	"bzip2" \
-	"efibootmgr" \
-	"gdisk" \
-	"hyperv-daemons" \
-	"langpacks-en" \
-	"lvm2" \
-	"nvme-cli" \
-	"patch" \
-	"rng-tools" \
-	"selinux-policy-targeted" \
-	"system-reinstall-bootc" \
-	"uuid" \
-	"yum-utils" \
-	--exclude="NetworkManager-config-server" \
-	--exclude="bolt" \
-	--exclude="buildah" \
-	--exclude="cockpit-podman" \
-	--exclude="containernetworking-plugins" \
-	--exclude="dnf-plugin-spacewalk" \
-	--exclude="glibc-all-langpacks" \
-	--exclude="initscripts-rename-device" \
-	--exclude="microcode_ctl" \
-	--exclude="podman" \
-	--exclude="python3-dnf-plugin-spacewalk" \
-	--exclude="python3-hwdata" \
-	--exclude="python3-rhnlib" \
-	--exclude="rhn-check" \
-	--exclude="rhn-client-tools" \
-	--exclude="rhn-setup" \
-	--exclude="rhnlib" \
-	--exclude="rhnsd" \
-	--exclude="usb_modeswitch" \
-	--exclude="dracut-config-rescue" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="*-firmware" && \
-	dnf clean all && \
-	rm -rf /var/cache/dnf
+RUN dnf -y install \
+	WALinuxAgent \
+	cloud-init \
+	cloud-utils-growpart \
+	gdisk \
+	hyperv-daemons && \
+	dnf clean all
 
-RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-azure.toml
+COPY azure/etc /etc
+COPY azure/usr /usr
 
-COPY --chown=root:root --chmod=0755 azure/usr/local/sbin/temp-disk-dataloss-warning /usr/local/sbin/temp-disk-dataloss-warning
-COPY --chown=root:root --chmod=0644 azure/etc/systemd/system/temp-disk-dataloss-warning.service /etc/systemd/system/temp-disk-dataloss-warning.service
+RUN <<EORUN
+chmod 0755 /usr/local/sbin/temp-disk-dataloss-warning
+
+echo 'ClientAliveInterval 180' >> /etc/ssh/sshd_config
+
+sed -i 's/Provisioning.Agent=auto/Provisioning.Agent=cloud-init/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.Format=y/ResourceDisk.Format=n/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.EnableSwap=y/ResourceDisk.EnableSwap=n/g' /etc/waagent.conf
+EORUN
 
 RUN systemctl enable \
-	"firewalld" \
-	"nm-cloud-setup.service" \
-	"nm-cloud-setup.timer" \
-	"sshd" \
+	"NetworkManager.service" \
+	"cloud-init" \
 	"temp-disk-dataloss-warning.service" \
 	"waagent"
