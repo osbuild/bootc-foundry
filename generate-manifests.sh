@@ -11,9 +11,10 @@ set -xeuo pipefail
 #   CACHE_IMAGE, CACHE_USERNAME, CACHE_PASSWORD - sidecar cache registry (optional)
 #   DRY_RUN - when set, skip all push operations (e.g. set for PR builds)
 
-export TO_REGISTRY=${IMAGE%%/*}
+TO_REGISTRY=$(echo "$IMAGE" | cut -d/ -f1)
+export TO_REGISTRY
 
-./login.sh
+. ./login.sh
 
 echo "Creating manifest for $IMAGE:$TAG"
 buildah manifest rm "$IMAGE:$TAG" 2>/dev/null || true

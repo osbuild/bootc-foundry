@@ -13,9 +13,10 @@ set -xeuo pipefail
 #   DRY_RUN - when set, skip all push operations (e.g. set for PR builds)
 
 IMAGE="${TO_IMAGE}:${TO_TAG}-${ARCH}"
-export TO_REGISTRY=${TO_IMAGE%%/*}
+TO_REGISTRY=$(echo "$TO_IMAGE" | cut -d/ -f1)
+export TO_REGISTRY
 
-./login.sh
+. ./login.sh
 
 if [ -n "${USE_CACHE:-}" ]; then
   CACHE_IMAGE_FULL="${CACHE_IMAGE}:${TO_TAG}-${ARCH}"
@@ -46,5 +47,5 @@ fi
 if [ -z "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
   buildah push "$IMAGE" "$CACHE_IMAGE_FULL"
 elif [ -n "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
-  echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
+  echo "Push to cache skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi
