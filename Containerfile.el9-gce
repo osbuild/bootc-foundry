@@ -2,9 +2,9 @@ FROM quay.io/osbuild/centos-bootc
 
 ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
+COPY gce /root
 
-COPY --chown=root:root --chmod=0644 resources/google-cloud-el9.repo /etc/yum.repos.d/google-cloud-el9.repo
-RUN ln -s /etc/yum.repos.d/google-cloud-el9.repo /root/google-cloud-el9.repo
+COPY --chown=root:root --chmod=0644 gce/etc/yum.repos.d/google-cloud-el9.repo /etc/yum.repos.d/google-cloud-el9.repo
 
 RUN dnf install -y \
 	"@core" \
@@ -36,14 +36,14 @@ RUN dnf install -y \
 	--exclude="qemu-guest-agent" \
 	--exclude="smartmontools" \
 	--exclude="dracut-config-rescue" \
-    --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+	--exclude="*-firmware" && \
+	dnf clean all && \
+	rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-gce.toml
 
 RUN systemctl enable \
-    "dnf-automatic.timer" \
-    "rngd" \
-    "sshd" && \
-    systemctl disable "reboot.target" "sshd-keygen@"
+	"dnf-automatic.timer" \
+	"rngd" \
+	"sshd" && \
+	systemctl disable "reboot.target" "sshd-keygen@"

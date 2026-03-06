@@ -10,7 +10,7 @@ RUN dnf install -y --skip-unavailable \
     "python3-dnf-plugin-tracer" \
     "google-compute-engine-guest-configs" \
     "google-compute-engine-oslogin" \
-    "google-guest-agent" \ \
+    "google-guest-agent" \
     --exclude="cloud-init" \
     --exclude="dracut-config-rescue" \
     --exclude="firewalld" \

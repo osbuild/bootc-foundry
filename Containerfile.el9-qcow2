@@ -39,8 +39,8 @@ RUN dnf install -y \
 	--exclude="biosdevname" \
 	--exclude="iprutils" \
 	--exclude="plymouth" \
-    --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+	--exclude="*-firmware" && \
+	dnf clean all && \
+	rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml

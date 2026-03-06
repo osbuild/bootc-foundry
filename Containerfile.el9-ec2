@@ -28,20 +28,20 @@ RUN dnf install -y \
 	--exclude="biosdevname" \
 	--exclude="iprutils" \
 	--exclude="plymouth" \
-    --exclude="*-firmware" && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+	--exclude="*-firmware" && \
+	dnf clean all && \
+	rm -rf /var/cache/dnf
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-ec2.toml
 
 RUN systemctl enable \
-    "NetworkManager" \
-    "cloud-config" \
-    "cloud-final" \
-    "cloud-init" \
-    "cloud-init-local" \
-    "nm-cloud-setup.service" \
-    "nm-cloud-setup.timer" \
-    "reboot.target" \
-    "sshd" \
-    "tuned"
+	"NetworkManager" \
+	"cloud-config" \
+	"cloud-final" \
+	"cloud-init" \
+	"cloud-init-local" \
+	"nm-cloud-setup.service" \
+	"nm-cloud-setup.timer" \
+	"reboot.target" \
+	"sshd" \
+	"tuned"
