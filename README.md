@@ -87,7 +87,6 @@ Apache License 2.0
 
 ## TODO
 
-* Make this repo a Container (UBI10) with required tools
-* Use these scripts to build rhel9/10 images, create a GHA job that will test this
-* Create an ENTRYFILE that will build and push the same (so we can run it in a RHOS job)
+* Document RHEL builds
+* Add AWS credentials and client to login.sh
 * Looks like /root/resources directory is missing (so symlinks are incorrect)

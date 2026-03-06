@@ -8,6 +8,7 @@ RUN dnf install -y \
     skopeo \
     subscription-manager \
     git \
+    awscli2 \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 

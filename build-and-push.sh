@@ -1,27 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build and push a single-arch image. All inputs via environment variables:
-#   REPO_USERNAME, REPO_PASSWORD  - optional; quay.io login (if missing, skips all push)
-#   CACHE_URL, CACHE_USERNAME, CACHE_PASSWORD - optional; all three required for any cache use
-#   TO_IMAGE, TO_TAG, ARCH, CONTAINERFILE, FROM_IMAGE, FROM_TAG - build params
+#
+# Build and push a single-arch image. Required variables:
+#
+#   TO_IMAGE, TO_TAG, ARCH, CONTAINERFILE, FROM_IMAGE, FROM_TAG
+#
+# Optional variables:
+#
+#   REPO_USERNAME, REPO_PASSWORD - destination registry credentials (skip push if missing)
+#   CACHE_IMAGE, CACHE_USERNAME, CACHE_PASSWORD - sidecar cache registry (optional)
 #   DRY_RUN - when set, skip all push operations (e.g. set for PR builds)
 
-if [ -n "${REPO_USERNAME:-}" ] && [ -n "${REPO_PASSWORD:-}" ]; then
-  echo "$REPO_PASSWORD" | buildah login -u "$REPO_USERNAME" --password-stdin quay.io
-fi
-
-USE_CACHE=
-if [ -n "${CACHE_URL:-}" ] && [ -n "${CACHE_USERNAME:-}" ] && [ -n "${CACHE_PASSWORD:-}" ]; then
-  USE_CACHE=1
-  echo "$CACHE_PASSWORD" | buildah login -u "$CACHE_USERNAME" --password-stdin ghcr.io
-fi
-
 IMAGE="${TO_IMAGE}:${TO_TAG}-${ARCH}"
+
+./login.sh
+
 if [ -n "${USE_CACHE:-}" ]; then
-  CACHE_IMAGE="${CACHE_URL}:${TO_TAG}-${ARCH}"
-  echo "Pulling cache image $CACHE_IMAGE"
-  buildah pull "$CACHE_IMAGE" 2>/dev/null || true
+  CACHE_IMAGE_FULL="${CACHE_IMAGE}:${TO_TAG}-${ARCH}"
+  echo "Pulling cache image $CACHE_IMAGE_FULL"
+  buildah pull "$CACHE_IMAGE_FULL" 2>/dev/null || true
 fi
 buildah rmi "$IMAGE" 2>/dev/null || true
 
@@ -45,7 +43,7 @@ else
 fi
 
 if [ -z "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
-  buildah push "$IMAGE" "$CACHE_IMAGE"
+  buildah push "$IMAGE" "$CACHE_IMAGE_FULL"
 elif [ -n "${DRY_RUN:-}" ] && [ -n "${USE_CACHE:-}" ]; then
   echo "Push skipped: DRY_RUN is set or REPO_USERNAME or REPO_PASSWORD missing"
 fi

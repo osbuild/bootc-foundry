@@ -15,7 +15,7 @@ permissions:
 
 env:
   DRY_RUN: ${{ github.event_name == 'pull_request' && '1' || '' }}
-  CACHE_URL: ghcr.io/${{ github.repository }}/cache
+  CACHE_IMAGE: ghcr.io/${{ github.repository }}/cache
 
 jobs:
   lint:
@@ -84,7 +84,7 @@ jobs:
           CACHE_USERNAME: ${{ github.actor }}
           CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           TO_IMAGE: ${{ matrix.to_image }}
-          CACHE_URL: ${{ env.CACHE_URL }}
+          CACHE_IMAGE: ${{ env.CACHE_IMAGE }}
           TO_TAG: ${{ matrix.to_tag }}
           ARCH: ${{ matrix.arch }}
           CONTAINERFILE: ${{ matrix.containerfile }}
@@ -117,5 +117,5 @@ jobs:
           IMAGE: ${{ matrix.image }}
           TAG: ${{ matrix.tag }}
           ARCHES: ${{ matrix.arches }}
-          CACHE_URL: ${{ env.CACHE_URL }}
+          CACHE_IMAGE: ${{ env.CACHE_IMAGE }}
         run: ./generate-manifests.sh

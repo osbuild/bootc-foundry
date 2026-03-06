@@ -16,7 +16,7 @@ env:
   FOUNDRY_IMAGE: ghcr.io/${{ github.repository }}/foundry:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha }}
   FOUNDRY_IMAGE_HEAD: ghcr.io/${{ github.repository }}/foundry:latest
   # private cache registry
-  CACHE_URL: ghcr.io/${{ github.repository }}/cache
+  CACHE_IMAGE: ghcr.io/${{ github.repository }}/cache
 
 jobs:
   build-container:
@@ -101,17 +101,17 @@ jobs:
           REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           CACHE_USERNAME: ${{ github.actor }}
           CACHE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          CACHE_URL: ${{ env.CACHE_URL }}
+          CACHE_IMAGE: ${{ env.CACHE_IMAGE }}
           STORAGE_DRIVER: overlay
           STORAGE_OPTS: "overlay.mount_program=/usr/bin/fuse-overlayfs"
           BUILDAH_ISOLATION: chroot
         run: |
-          IMAGE="$CACHE_URL:${{ matrix.tag_suffix }}"
+          IMAGE="$CACHE_IMAGE:${{ matrix.tag_suffix }}"
           sudo podman run --rm --privileged --cap-add all --device /dev/fuse:rw \
             --security-opt label=disable --security-opt seccomp=unconfined \
             -e "RHSM_ORG=$RHSM_ORG" -e "RHSM_ACTIVATIONKEY=$RHSM_ACTIVATIONKEY" \
             -e "RHSM_USERNAME=$RHSM_USERNAME" -e "RHSM_PASSWORD=$RHSM_PASSWORD" \
-            -e "CACHE_URL=$CACHE_URL" -e "CACHE_USERNAME=$CACHE_USERNAME" -e "CACHE_PASSWORD=$CACHE_PASSWORD" \
+            -e "CACHE_IMAGE=$CACHE_IMAGE" -e "CACHE_USERNAME=$CACHE_USERNAME" -e "CACHE_PASSWORD=$CACHE_PASSWORD" \
             -e "STORAGE_DRIVER=$STORAGE_DRIVER" -e "STORAGE_OPTS=$STORAGE_OPTS" -e "BUILDAH_ISOLATION=$BUILDAH_ISOLATION" \
             -e "DRY_RUN=$DRY_RUN" \
             "${{ env.FOUNDRY_IMAGE }}" \
