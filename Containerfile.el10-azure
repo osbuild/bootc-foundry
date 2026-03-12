@@ -4,62 +4,105 @@ ARG CONTAINERFILE=Containerfile
 COPY $CONTAINERFILE /root/Containerfile
 COPY azure /root
 
-RUN dnf install -y \
-	"@Server" \
-	"NetworkManager" \
-	"NetworkManager-cloud-setup" \
-	"WALinuxAgent" \
-	"azure-vm-utils" \
-	"bzip2" \
-	"cloud-init" \
-	"cloud-utils-growpart" \
-	"efibootmgr" \
-	"hyperv-daemons" \
-	"langpacks-en" \
-	"lvm2" \
-	"nvme-cli" \
-	"patch" \
-	"rng-tools" \
-	"rsync" \
-	"selinux-policy-targeted" \
-	"system-reinstall-bootc" \
-	"uuid" \
-	"yum-utils" \
-	--exclude="NetworkManager-config-server" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="bolt" \
-	--exclude="buildah" \
-	--exclude="cockpit-podman" \
-	--exclude="containernetworking-plugins" \
-	--exclude="dnf-plugin-spacewalk" \
-	--exclude="dracut-config-rescue" \
-	--exclude="glibc-all-langpacks" \
-	--exclude="initscripts-rename-device" \
-	--exclude="iprutils" \
-	--exclude="microcode_ctl" \
-	--exclude="plymouth" \
-	--exclude="podman" \
-	--exclude="python3-dnf-plugin-spacewalk" \
-	--exclude="python3-hwdata" \
-	--exclude="python3-rhnlib" \
-	--exclude="rhn-check" \
-	--exclude="rhn-client-tools" \
-	--exclude="rhn-setup" \
-	--exclude="rhnlib" \
-	--exclude="rhnsd" \
-	--exclude="usb_modeswitch" \
-	--exclude="*-firmware"
+# WALinuxAgent, NetworkManager, and cloud-init are integrated.
+RUN dnf -y install \
+	WALinuxAgent \
+	NetworkManager \
+	cloud-init \
+	cloud-utils-growpart \
+	firewalld \
+	hyperv-daemons && \
+	dnf clean all
 
-RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
+RUN <<EORUN
+# common kernel arguments
+mkdir -p /usr/lib/bootc/kargs.d
+echo 'kargs = ["ro"]' > /usr/lib/bootc/kargs.d/50-azure-common.toml
 
-COPY --chown=root:root --chmod=0755 azure/usr/local/sbin/temp-disk-dataloss-warning /usr/local/sbin/temp-disk-dataloss-warning
-COPY --chown=root:root --chmod=0644 azure/etc/systemd/system/temp-disk-dataloss-warning.service /etc/systemd/system/temp-disk-dataloss-warning.service
+# x86_64 kernel arguments
+cat <<'EOF' > /usr/lib/bootc/kargs.d/50-azure-x86_64.toml
+match-architectures = ["x86_64"]
+kargs = [
+    "console=tty1",
+    "console=ttyS0",
+    "earlyprintk=ttyS0",
+    "rootdelay=300"
+]
+EOF
+
+# aarch64 kernel arguments
+cat <<'EOF' > /usr/lib/bootc/kargs.d/50-azure-aarch64.toml
+match-architectures = ["aarch64"]
+kargs = [
+    "console=ttyAMA0"
+]
+EOF
+
+# grub configuration
+cat <<'EOF' > /etc/default/grub
+GRUB_TIMEOUT=10
+GRUB_TIMEOUT_STYLE=countdown
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=y
+GRUB_TERMINAL="serial console"
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"
+GRUB_DISABLE_RECOVERY="true"
+EOF
+
+# nm-cloud-setup configuration
+mkdir -p /etc/systemd/system/nm-cloud-setup.service.d/
+cat <<'EOF' > /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-azure.conf
+[Service]
+Environment="NM_CLOUD_SETUP_AZURE=yes"
+EOF
+
+# ensure global networking is enabled and ZeroConf is disabled
+cat <<'EOF' >> /etc/sysconfig/network
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+
+# mellanox is managed by Azure
+mkdir -p /etc/NetworkManager/conf.d
+cat <<'EOT' > /etc/NetworkManager/conf.d/99-azure-unmanaged-devices.conf
+[keyfile]
+unmanaged-devices=driver:mlx4_core;driver:mlx5_core;
+EOT
+
+# waagent configuration
+sed -i 's/Provisioning.Agent=auto/Provisioning.Agent=cloud-init/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.Format=y/ResourceDisk.Format=n/g' /etc/waagent.conf
+sed -i 's/ResourceDisk.EnableSwap=y/ResourceDisk.EnableSwap=n/g' /etc/waagent.conf
+
+# fix for Azure Load Balancer
+echo 'ClientAliveInterval 180' >> /etc/ssh/sshd_config
+
+# acpi_cpufreq, intel_cstate: prevent guest OS from interfering with hypervisor-level power management.
+# amdgpu, nouveau, lbm-nouveau: disable physical GPU drivers to reduce boot time and attack surface.
+# floppy: disable legacy hardware support not present in Azure.
+# skx_edac, intel_uncore: disable hardware-specific monitoring/error correction that is redundant or inaccessible in a VM.
+echo 'blacklist acpi_cpufreq amdgpu intel_cstate floppy nouveau lbm-nouveau skx_edac intel_uncore' >> /etc/modprobe.d/blacklist.conf
+
+# pwquality configuration
+echo 'minlen = 6' >> /etc/security/pwquality.conf
+echo 'minclass = 3' >> /etc/security/pwquality.conf
+EORUN
+
+# copy and update permissions for other files
+COPY azure/etc /etc
+COPY azure/usr /usr
+RUN <<EORUN
+chmod 0755 /usr/local/sbin/temp-disk-dataloss-warning
+EORUN
 
 RUN systemctl enable \
-	"firewalld" \
-	"nm-cloud-setup.service" \
-	"nm-cloud-setup.timer" \
-	"sshd" \
-	"temp-disk-dataloss-warning.service" \
-	"waagent"
+	waagent \
+	cloud-init \
+	NetworkManager.service \
+	nm-cloud-setup.service \
+	nm-cloud-setup.timer \
+	firewalld \
+	hypervkvpd \
+	hypervvssd \
+	temp-disk-dataloss-warning.service
