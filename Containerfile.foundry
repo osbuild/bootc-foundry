@@ -10,11 +10,10 @@ RUN dnf install -y \
     skopeo \
     subscription-manager \
     git \
-    && dnf clean all \
-    && rm -rf /var/cache/dnf
+    && dnf clean all
 
 # AppStream is only available when building this on a registered system (e.g. RHOS)
-RUN if [ -z "${UPSTREAM:-}" ]; then dnf install -y awscli2; fi
+RUN if [ -z "${UPSTREAM:-}" ]; then dnf install -y awscli2 && dnf clean all; fi
 
 WORKDIR /workspace
 COPY . /workspace
