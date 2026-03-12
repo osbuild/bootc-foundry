@@ -23,19 +23,8 @@ RUN dnf install -y \
 	"tar" \
 	"timedatex" \
 	"tuned" \
-	"vim" \
-	--exclude="alsa-utils" \
-	--exclude="b43-fwcutter" \
-	--exclude="b43-openfwwf" \
-	--exclude="dmraid" \
-	--exclude="dracut-config-rescue" \
-	--exclude="eject" \
-	--exclude="gpm" \
-	--exclude="irqbalance" \
-	--exclude="microcode_ctl" \
-	--exclude="qemu-guest-agent" \
-	--exclude="smartmontools" \
-	--exclude="*-firmware"
+	"vim" && \
+	dnf clean all
 
 RUN echo 'kargs = ["biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
 

@@ -24,23 +24,7 @@ RUN dnf install -y \
 	"qemu-guest-agent" \
 	"redhat-release" \
 	"redhat-release-eula" \
-	"tcpdump" \
-	--exclude="dnf-plugin-spacewalk" \
-	--exclude="fedora-release" \
-	--exclude="fedora-repos" \
-	--exclude="firewalld" \
-	--exclude="langpacks-*" \
-	--exclude="langpacks-en" \
-	--exclude="nss" \
-	--exclude="rng-tools" \
-	--exclude="udisks2" \
-	--exclude="dracut-config-rescue" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="*-firmware" && \
-	dnf clean all && \
-	rm -rf /var/cache/dnf
+	"tcpdump" && \
+	dnf clean all
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0"]' > /usr/lib/bootc/kargs.d/50-qcow2.toml

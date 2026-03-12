@@ -19,14 +19,8 @@ RUN dnf install -y \
 	"system-reinstall-bootc" \
 	"tar" \
 	"tuned" \
-	"yum-utils" \
-	--exclude="biosdevname" \
-	--exclude="dracut-config-rescue" \
-	--exclude="firewalld" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="qemu-guest-agent" \
-	--exclude="*-firmware"
+	"yum-utils" && \
+	dnf clean all
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
 

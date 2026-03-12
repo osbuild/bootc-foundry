@@ -25,34 +25,8 @@ RUN dnf install -y \
 	"selinux-policy-targeted" \
 	"system-reinstall-bootc" \
 	"uuid" \
-	"yum-utils" \
-	--exclude="NetworkManager-config-server" \
-	--exclude="bolt" \
-	--exclude="buildah" \
-	--exclude="cockpit-podman" \
-	--exclude="containernetworking-plugins" \
-	--exclude="dnf-plugin-spacewalk" \
-	--exclude="glibc-all-langpacks" \
-	--exclude="initscripts-rename-device" \
-	--exclude="microcode_ctl" \
-	--exclude="podman" \
-	--exclude="python3-dnf-plugin-spacewalk" \
-	--exclude="python3-hwdata" \
-	--exclude="python3-rhnlib" \
-	--exclude="rhn-check" \
-	--exclude="rhn-client-tools" \
-	--exclude="rhn-setup" \
-	--exclude="rhnlib" \
-	--exclude="rhnsd" \
-	--exclude="usb_modeswitch" \
-	--exclude="dracut-config-rescue" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="*-firmware" && \
-	dnf clean all && \
-	rm -rf /var/cache/dnf
+	"yum-utils" && \
+	dnf clean all
 
 RUN echo 'kargs = ["ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"]' > /usr/lib/bootc/kargs.d/50-azure.toml
 

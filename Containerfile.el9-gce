@@ -24,21 +24,8 @@ RUN dnf install -y \
 	"python3" \
 	"rng-tools" \
 	"timedatex" \
-	"vim" \
-	--exclude="alsa-utils" \
-	--exclude="b43-fwcutter" \
-	--exclude="b43-openfwwf" \
-	--exclude="dmraid" \
-	--exclude="eject" \
-	--exclude="gpm" \
-	--exclude="irqbalance" \
-	--exclude="microcode_ctl" \
-	--exclude="qemu-guest-agent" \
-	--exclude="smartmontools" \
-	--exclude="dracut-config-rescue" \
-	--exclude="*-firmware" && \
-	dnf clean all && \
-	rm -rf /var/cache/dnf
+	"vim" && \
+	dnf clean all
 
 RUN echo 'kargs = ["net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y console=ttyS0,38400n8d"]' > /usr/lib/bootc/kargs.d/50-gce.toml
 

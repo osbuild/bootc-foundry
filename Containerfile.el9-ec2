@@ -20,17 +20,8 @@ RUN dnf install -y \
 	"redhat-release" \
 	"redhat-release-eula" \
 	"system-reinstall-bootc" \
-	"yum-utils" \
-	--exclude="firewalld" \
-	--exclude="qemu-guest-agent" \
-	--exclude="dracut-config-rescue" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="iprutils" \
-	--exclude="plymouth" \
-	--exclude="*-firmware" && \
-	dnf clean all && \
-	rm -rf /var/cache/dnf
+	"yum-utils" && \
+	dnf clean all
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8 net.ifnames=0 nvme_core.io_timeout=4294967295"]' > /usr/lib/bootc/kargs.d/50-ec2.toml
 

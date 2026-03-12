@@ -24,19 +24,7 @@ RUN dnf install -y \
 	"system-reinstall-bootc" \
 	"tar" \
 	"tcpdump" \
-	"tuned" \
-	--exclude="alsa-lib" \
-	--exclude="biosdevname" \
-	--exclude="dnf-plugin-spacewalk" \
-	--exclude="dracut-config-rescue" \
-	--exclude="fedora-release" \
-	--exclude="fedora-repos" \
-	--exclude="firewalld" \
-	--exclude="iprutils" \
-	--exclude="langpacks-*" \
-	--exclude="plymouth" \
-	--exclude="rng-tools" \
-	--exclude="udisks2" \
-	--exclude="*-firmware"
+	"tuned" && \
+	dnf clean all
 
 RUN echo 'kargs = ["console=tty0 console=ttyS0,115200n8"]' > /usr/lib/bootc/kargs.d/50-image-builder.toml
