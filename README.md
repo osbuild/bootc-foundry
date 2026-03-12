@@ -28,8 +28,6 @@ build without `--from` argument for podman or buildah. Additionally,
         -f "Containerfile.xxx" \
         -t my-image .
 
-All required files are kept in [`resources/`](resources/) directory.
-
 The Containerfile itself, alongside with all required resource files, is
 embedded within in `/root` directory.
 
@@ -57,30 +55,6 @@ Images are available as multi-arch image manifests with the following URIs:
 * `quay.io/osbuild/centos-bootc:stream10-azure`
 * `quay.io/osbuild/centos-bootc:stream10-gce`
 * `quay.io/osbuild/centos-bootc:stream10-qcow2`
-
-Image Mode for RHEL 9/10 images are only built on CICD to ensure everything
-works, but not pushed anywhere. 
-
-Derived images are automatically rebuilt after every push. Daily rebuild is
-scheduled for every morning (CET).
-
-## CICD
-
-Building, manifest creation, and pushing are handled by a GitHub Action. Because
-the configuration matrix is large, it is generated using the `make matrix`
-command and it uses [`config.yaml`](config.yaml) as the input.
-
-No cross-arch build is currently done since only x86_64 and aarch64 are
-supported and these are all available on GitHub.
-
-GitHub Actions use `ghcr.io` as a cache registry to speed up pulls and builds
-because both `quay.io` and `registry.redhat.io` are hosted elsewhere. The cache
-registry is private.
-
-The generation script also creates `matrix-*.sh` shell scripts which are called
-from `entrypoint.sh` which is used on RHOS cron job for builds on our AWS EC2
-infra. This is used in `Container.foundry` which is containerized version of
-this repository with all the scripts and Containerfiles.
 
 ## Using derived images
 
