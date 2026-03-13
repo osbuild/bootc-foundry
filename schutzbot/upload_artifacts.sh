@@ -2,6 +2,13 @@
 
 # This script uploads all files from ARTIFACTS folder to S3
 
+for var in V2_AWS_SECRET_ACCESS_KEY V2_AWS_ACCESS_KEY_ID; do
+  if [[ -z "${!var}" ]]; then
+    echo "Required variable not found"
+    exit 1
+  fi
+done
+
 S3_URL="s3://image-builder-ci-artifacts/osbuild-foundry/$CI_COMMIT_BRANCH/$CI_JOB_ID/"
 BROWSER_URL="https://s3.console.aws.amazon.com/s3/buckets/image-builder-ci-artifacts?region=us-east-1&prefix=osbuild-foundry/$CI_COMMIT_BRANCH/$CI_JOB_ID/&showversions=false"
 ARTIFACTS=${ARTIFACTS:-/tmp/artifacts}
