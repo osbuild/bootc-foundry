@@ -13,6 +13,7 @@ init:
 
 test:
   before_script:
+    - set -x && export SHELLOPTS
     - mkdir -p /tmp/artifacts
     - schutzbot/ci_details.sh > /tmp/artifacts/ci-details-before-run.txt
     - cat schutzbot/team_ssh_keys.txt | tee -a ~/.ssh/authorized_keys > /dev/null
