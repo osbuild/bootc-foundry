@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -z "${SCHUTZBOT_LOGIN}" ]]; then
+  echo "Required variable not found"
+  exit 1
+fi
+
 # if a user is logged in to the runner, wait until they're done
 while (( $(who -u | grep -c -v '?' || true) > 0 )); do
     echo "Waiting for user(s) to log off"
