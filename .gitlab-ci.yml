@@ -28,10 +28,10 @@ test:
     - terraform/openstack
   parallel:
     matrix:
-      # available runners: https://github.com/osbuild/gitlab-ci-terraform/tree/main/rhos-01
+      # available runners: https://github.com/osbuild/gitlab-ci-terraform
       - RUNNER:
-          - rhos-01/centos-stream-10-x86_64
-          - rhos-01/rhel-10.2-nightly-x86_64
+          - aws/centos-stream-10-x86_64
+          - aws/rhel-10.1-ga-x86_64
         INTERNAL_NETWORK: ["true"]
 
 finish:
