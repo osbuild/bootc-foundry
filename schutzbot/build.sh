@@ -82,6 +82,9 @@ for ARCH in $ARCHES; do
         buildah build --layers --arch="$ARCH" \
             --build-arg CONTAINERFILE="Containerfile" \
             --from "${FROM_REF}" \
+            --storage-driver=vfs \
+            --userns=host \
+            --isolation=chroot \
             -f "Containerfile" \
             -t "$DST_REF-$ARCH-$TYPE" .
         section_end "build_${ARCH}_${TYPE}"
@@ -102,19 +105,19 @@ for TYPE in $TYPES; do
 done
 
 section_start create_manifest "Creating manifest for $DST_REF"
-buildah manifest create "$DST_REF"
+buildah manifest create --storage-driver=vfs "$DST_REF"
 section_end create_manifest
 
 for TYPE in $TYPES; do
     section_start "add_to_manifest_${TYPE}" "Adding $TYPE to $DST_REF manifest"
     for ARCH in $ARCHES; do
-        buildah manifest add "$DST_REF" "$DST_REF-$ARCH-$TYPE"
+        buildah manifest add --storage-driver=vfs "$DST_REF" "$DST_REF-$ARCH-$TYPE"
     done
     section_end "add_to_manifest_${TYPE}"
 
     if [ -n "${DST_CREDS:-}" ] && [ -z "${NOPUSH:-}" ]; then
         section_start "push_manifest_${TYPE}" "Pushing manifest $DST_REF to registry"
-        buildah manifest push --all "$DST_REF" "docker://$DST_REF"
+        buildah manifest push --storage-driver=vfs --all "$DST_REF" "docker://$DST_REF"
         section_end "push_manifest_${TYPE}"
     else
         echo "Push skipped: DST_CREDS missing or NOPUSH set"
