@@ -8,3 +8,10 @@ lint-shell:
 .PHONY: lint-yaml
 lint-yaml:
 	yamllint $$(find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/.git/*')
+
+.PHONY: fmt
+fmt: fmt-shell
+
+.PHONY: fmt-shell
+fmt-shell:
+	find . -name '*.sh' -not -path '*/.git/*' -exec shfmt -w -i 4 {} \;
