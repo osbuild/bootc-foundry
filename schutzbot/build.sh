@@ -69,7 +69,7 @@ DST_REF=${DST_REF:-local}
 for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
-        cp "containerfiles/Containerfile.comment" "Containerfile"
+        cp -fv "containerfiles/Containerfile.comment" "Containerfile"
         {
             echo "FROM ${FROM_REF}"
             echo "ARG BUILD_DATE=$(date +%Y-%m-%d)"
