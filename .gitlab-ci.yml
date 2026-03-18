@@ -100,6 +100,32 @@ run:
     - if [ "$CI_JOB_STATUS" = "success" ]; then schutzbot/update_github_status.sh finish "$FROM_REF"; fi
     - section_end after_script
 
+
+test:
+  extends: .terraform
+  stage: run
+  variables:
+    RUNNER: aws/rhel-10.1-ga-x86_64
+  before_script:
+    - . schutzbot/gitlab-utils.sh
+    - section_start before_script "Run before script section"
+    - schutzbot/ec2-spot-check.sh &
+    - mkdir -p /tmp/artifacts && schutzbot/ci_details.sh > /tmp/artifacts/ci-details-before-run.txt
+    - cat schutzbot/team_ssh_keys.txt | tee -a ~/.ssh/authorized_keys > /dev/null
+    - section_end before_script
+  script:
+    - podman run $(podman build -f distribution/Dockerfile-ubi . | tail -n 1) --repo placeholder.org
+  after_script:
+    - . schutzbot/gitlab-utils.sh
+    - section_start after_script "Run after script section"
+    - schutzbot/ci_details.sh > /tmp/artifacts/ci-details-after-run.txt || true
+    - schutzbot/unregister.sh || true
+    - schutzbot/save_journal.sh || true
+    - schutzbot/upload_artifacts.sh
+    - if [ "$CI_JOB_STATUS" = "success" ]; then schutzbot/update_github_status.sh finish; else schutzbot/update_github_status.sh update; fi
+    - section_end after_script
+
+
 finish:
   extends: .base
   stage: finish
