@@ -69,11 +69,11 @@ DST_REF=${DST_REF:-local}
 for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
-        cp "Containerfile.comment" "Containerfile"
+        cp "containerfiles/Containerfile.comment" "Containerfile"
         {
             echo "FROM ${FROM_REF}"
             echo "ARG BUILD_DATE=$(date +%Y-%m-%d)"
-            tail -n +2 "Containerfile.${CONTAINERFILE}-${TYPE}"
+            tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}"
         } >>"Containerfile"
         cat "Containerfile"
         section_end prepare_containerfile
