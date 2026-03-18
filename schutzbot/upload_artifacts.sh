@@ -1,12 +1,12 @@
 #!/bin/bash
-
+#
 # This script uploads all files from ARTIFACTS folder to S3
 
 for var in V2_AWS_SECRET_ACCESS_KEY V2_AWS_ACCESS_KEY_ID; do
-  if [[ -z "${!var}" ]]; then
-    echo "Required variable not found"
-    exit 1
-  fi
+    if [[ -z "${!var}" ]]; then
+        echo "Required variable not found"
+        exit 1
+    fi
 done
 
 S3_URL="s3://image-builder-ci-artifacts/osbuild-foundry/$CI_COMMIT_BRANCH/$CI_JOB_ID/"
@@ -15,7 +15,7 @@ ARTIFACTS=${ARTIFACTS:-/tmp/artifacts}
 
 # Colorful output.
 function greenprint {
-  echo -e "\033[1;32m[$(date -Isecond)] ${1}\033[0m"
+    echo -e "\033[1;32m[$(date -Isecond)] ${1}\033[0m"
 }
 source /etc/os-release
 # s3cmd is in epel, add if it's not present
@@ -35,7 +35,7 @@ sudo dnf -y install s3cmd
 greenprint "Job artifacts will be uploaded to: $S3_URL"
 
 AWS_SECRET_ACCESS_KEY="$V2_AWS_SECRET_ACCESS_KEY" \
-AWS_ACCESS_KEY_ID="$V2_AWS_ACCESS_KEY_ID" \
-s3cmd --acl-private --recursive put "$ARTIFACTS"/* "$S3_URL"
+    AWS_ACCESS_KEY_ID="$V2_AWS_ACCESS_KEY_ID" \
+    s3cmd --acl-private --recursive put "$ARTIFACTS"/* "$S3_URL"
 
 greenprint "Please login to 438669297788 AWS account and visit $BROWSER_URL to access job artifacts."

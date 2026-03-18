@@ -1,38 +1,38 @@
 #!/bin/bash
 
 if [[ -z "${SCHUTZBOT_LOGIN}" ]]; then
-  echo "Required variable not found"
-  exit 1
+    echo "Required variable not found"
+    exit 1
 fi
 
 # if a user is logged in to the runner, wait until they're done
-while (( $(who -u | grep -c -v '?' || true) > 0 )); do
+while (($(who -u | grep -c -v '?' || true) > 0)); do
     echo "Waiting for user(s) to log off"
     sleep 30
 done
 
 if [[ $1 == "start" ]]; then
-  GITHUB_NEW_STATE="pending"
-  GITHUB_NEW_DESC="I'm currently testing this commit, be patient."
+    GITHUB_NEW_STATE="pending"
+    GITHUB_NEW_DESC="I'm currently testing this commit, be patient."
 elif [[ $1 == "finish" ]]; then
-  GITHUB_NEW_STATE="success"
-  GITHUB_NEW_DESC="I like this commit!"
+    GITHUB_NEW_STATE="success"
+    GITHUB_NEW_DESC="I like this commit!"
 elif [[ $1 == "spot" ]]; then
-  GITHUB_NEW_STATE="failure"
-  GITHUB_NEW_DESC="Bad luck, AWS EC2 spot instance was terminated."
+    GITHUB_NEW_STATE="failure"
+    GITHUB_NEW_DESC="Bad luck, AWS EC2 spot instance was terminated."
 elif [[ $1 == "update" ]]; then
-  if [[ $CI_JOB_STATUS == "canceled" ]]; then
-    GITHUB_NEW_STATE="failure"
-    GITHUB_NEW_DESC="Someone told me to cancel this test run."
-  elif [[ $CI_JOB_STATUS == "failed" ]]; then
-    GITHUB_NEW_STATE="failure"
-    GITHUB_NEW_DESC="I'm sorry, something is odd about this commit."
-  else
-    exit 0
-  fi
+    if [[ $CI_JOB_STATUS == "canceled" ]]; then
+        GITHUB_NEW_STATE="failure"
+        GITHUB_NEW_DESC="Someone told me to cancel this test run."
+    elif [[ $CI_JOB_STATUS == "failed" ]]; then
+        GITHUB_NEW_STATE="failure"
+        GITHUB_NEW_DESC="I'm sorry, something is odd about this commit."
+    else
+        exit 0
+    fi
 else
-  echo "Unknown command: $1"
-  exit 1
+    echo "Unknown command: $1"
+    exit 1
 fi
 
 CONTEXT="Schutzbot on GitLab"
