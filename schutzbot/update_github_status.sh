@@ -17,6 +17,9 @@ if [[ $1 == "start" ]]; then
 elif [[ $1 == "finish" ]]; then
   GITHUB_NEW_STATE="success"
   GITHUB_NEW_DESC="I like this commit!"
+elif [[ $1 == "spot" ]]; then
+  GITHUB_NEW_STATE="failure"
+  GITHUB_NEW_DESC="Bad luck, AWS EC2 spot instance was terminated."
 elif [[ $1 == "update" ]]; then
   if [[ $CI_JOB_STATUS == "canceled" ]]; then
     GITHUB_NEW_STATE="failure"
@@ -28,13 +31,13 @@ elif [[ $1 == "update" ]]; then
     exit 0
   fi
 else
-  echo "unknown command"
+  echo "Unknown command: $1"
   exit 1
 fi
 
 CONTEXT="Schutzbot on GitLab"
-if [[ "$CI_PIPELINE_SOURCE" == "schedule" ]]; then
-    CONTEXT="$CONTEXT, RHEL-${RHEL_MAJOR:-}-nightly"
+if [[ -n "$2" ]]; then
+    CONTEXT="$CONTEXT: $2"
 fi
 
 curl \
