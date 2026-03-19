@@ -60,8 +60,9 @@ def main():
     )
     args = parser.parse_args(sys.argv[1:])
 
-    for build in BUILD_LIST:
-        run_one(build, args.repo)
+    print('hai', args.repo)
+    # for build in BUILD_LIST:
+    #     run_one(build, args.repo)
     return 0
 
 
