@@ -1,3 +1,19 @@
 FROM quay.io/fedora/fedora-bootc
 
-RUN echo TODO
+COPY Containerfile /root/Containerfile
+
+RUN dnf install -y --skip-unavailable \
+    @guest-agents
+    "btrfs-progs" \
+    "lvm2" \
+    "xfsprogs" \
+    "initial-setup" && \
+    dnf clean all
+
+COPY fedora-qcow2/usr/ /usr/
+
+# trigger anaconda initial setup
+RUN touch /etc/reconfigSys
+ 
+RUN systemctl enable \
+    initial-setup.service
