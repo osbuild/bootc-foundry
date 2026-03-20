@@ -1,0 +1,5 @@
+match-architectures = ["aarch64"]
+kargs = [
+    "earlycon=pl011",
+    "console=ttyAMA0"
+]
