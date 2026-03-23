@@ -7,7 +7,7 @@ lint-shell:
 
 .PHONY: lint-yaml
 lint-yaml:
-	yamllint $$(find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/.git/*')
+	yamllint $$(find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/.git/*' -not -path '*/.tekton/*')
 
 .PHONY: fmt
 fmt: fmt-shell
