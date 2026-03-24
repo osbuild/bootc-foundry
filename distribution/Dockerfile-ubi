@@ -9,4 +9,5 @@ COPY ./containerfiles/Containerfile* /containerfiles/
 COPY ./schutzbot /schutzbot
 
 COPY ./distribution/entrypoint.py /opt/entrypoint.py
-ENTRYPOINT ["/opt/entrypoint.py"]
+COPY ./distribution/temp-entrypoint.sh /opt/entrypoint.sh
+ENTRYPOINT ["/opt/entrypoint.sh"]
