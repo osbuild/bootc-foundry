@@ -36,6 +36,9 @@ objects:
                   args:
                     - "--repo"
                     - "${REPO}"
+                  volumeMounts:
+                    - name: tmp
+                      mountPath: /tmp
                   resources:
                     requests:
                       cpu: "${CPU_REQUEST}"
@@ -43,6 +46,9 @@ objects:
                     limits:
                       cpu: "${CPU_LIMIT}"
                       memory: "${MEMORY_LIMIT}"
+              volumes:
+                - name: tmp
+                  emptyDir: {}
 
   - apiVersion: v1
     kind: ServiceAccount

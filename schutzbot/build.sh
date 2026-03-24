@@ -69,14 +69,14 @@ DST_REF=${DST_REF:-local}
 for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
-        cp -fv "containerfiles/Containerfile.comment" "Containerfile"
+        cp -fv "containerfiles/Containerfile.comment" "/tmp/Containerfile"
         set -x
         # shellcheck disable=SC2129
-        echo "FROM ${FROM_REF}" >> "Containerfile"
-        echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "Containerfile"
-        tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}" >> "Containerfile"
+        echo "FROM ${FROM_REF}" >> "/tmp/Containerfile"
+        echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "/tmp/Containerfile"
+        tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}" >> "/tmp/Containerfile"
         set +x
-        cat "Containerfile"
+        cat "/tmp/Containerfile"
         section_end prepare_containerfile
 
         section_start "build_${ARCH}_${TYPE}" "Building $FROM_REF arch $ARCH type $TYPE"
@@ -86,7 +86,7 @@ for ARCH in $ARCHES; do
             --storage-driver=vfs \
             --userns=host \
             --isolation=chroot \
-            -f "Containerfile" \
+            -f "/tmp/Containerfile" \
             -t "$DST_REF-$ARCH-$TYPE" .
         section_end "build_${ARCH}_${TYPE}"
     done
