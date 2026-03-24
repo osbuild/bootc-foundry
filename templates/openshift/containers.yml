@@ -39,6 +39,8 @@ objects:
                   volumeMounts:
                     - name: tmp
                       mountPath: /tmp
+                    - name: home
+                      mountPath: /app
                   resources:
                     requests:
                       cpu: "${CPU_REQUEST}"
@@ -48,6 +50,8 @@ objects:
                       memory: "${MEMORY_LIMIT}"
               volumes:
                 - name: tmp
+                  emptyDir: {}
+                - name: home
                   emptyDir: {}
 
   - apiVersion: v1

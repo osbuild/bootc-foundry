@@ -37,19 +37,21 @@ def run_one(build, repo):
     env["FROM_REF"] = build["from"]
     env["DST_REF"] = f"{repo}/{build['dst']}"
     env["CONTAINERFILE"] = build["containerfile"]
+    env["CONTAINERFILES_DIR"] = "/opt/containerfiles"
     if build.get("from_creds"):
         env["FROM_CREDS"] = build["from_creds"]
 
     print(f"""
-Running /schutzbot/build.sh with:
+Running /opt/schutzbot/build.sh with:
     FROM_REF: {env['FROM_REF']}
     DST_REF: {env['DST_REF']}
     CONTAINERFILE: {env['CONTAINERFILE']}
+    CONTAINERFILES_DIR: {env['CONTAINERFILES_DIR']}
     FROM_CREDS present: {'yes' if 'FROM_CREDS' in env else 'no'}""")
 
     subprocess.run([
-        "/schutzbot/build.sh",
-    ], env=env, shell=True, stderr=subprocess.STDOUT, check=True)
+        "/opt/schutzbot/build.sh",
+    ], env=env, cwd=os.getenv("HOME"), stderr=subprocess.STDOUT, check=True)
 
 
 def main():

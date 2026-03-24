@@ -19,6 +19,8 @@ set -euo pipefail
 
 . "$(dirname "$0")/gitlab-utils.sh"
 
+CONTAINERFILES_DIR=${CONTAINERFILES_DIR:-containerfiles}
+
 if [ -n "${FROM_CREDS:-}" ] && [[ "${FROM_CREDS}" == *:* ]]; then
     FROM_USER="${FROM_CREDS%%:*}"
     FROM_PASS="${FROM_CREDS#*:}"
@@ -69,12 +71,12 @@ DST_REF=${DST_REF:-local}
 for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
-        cp -fv "containerfiles/Containerfile.comment" "/tmp/Containerfile"
+        cp -fv "$CONTAINERFILES_DIR/Containerfile.comment" "/tmp/Containerfile"
         set -x
         # shellcheck disable=SC2129
         echo "FROM ${FROM_REF}" >> "/tmp/Containerfile"
         echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "/tmp/Containerfile"
-        tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}" >> "/tmp/Containerfile"
+        tail -n +2 "$CONTAINERFILES_DIR/Containerfile.${CONTAINERFILE}-${TYPE}" >> "/tmp/Containerfile"
         set +x
         cat "/tmp/Containerfile"
         section_end prepare_containerfile
