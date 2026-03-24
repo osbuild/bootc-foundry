@@ -2,11 +2,18 @@ FROM registry.access.redhat.com/ubi10/ubi-minimal:latest
 
 RUN microdnf install -y buildah python3
 
-RUN mkdir /containerfiles
-COPY ./containerfiles/Containerfile* /containerfiles/
+ENV HOME=/app
+RUN mkdir $HOME
+
+# used by buildah
+RUN mkdir $HOME/.config
+RUN mkdir $HOME/.local
+
+RUN mkdir /opt/containerfiles
+COPY ./containerfiles/Containerfile* /opt/containerfiles/
 
 # rely on CI scripts for now
-COPY ./schutzbot /schutzbot
+COPY ./schutzbot /opt/schutzbot
 
 COPY ./distribution/entrypoint.py /opt/entrypoint.py
 COPY ./distribution/temp-entrypoint.sh /opt/entrypoint.sh
