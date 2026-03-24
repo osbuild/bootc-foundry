@@ -36,6 +36,9 @@ objects:
                   args:
                     - "--repo"
                     - "${REPO}"
+                  env:
+                    - name: PYTHONUNBUFFERED
+                      value: "1"
                   resources:
                     requests:
                       cpu: "${CPU_REQUEST}"
