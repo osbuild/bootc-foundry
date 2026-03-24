@@ -70,11 +70,12 @@ for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
         cp -fv "containerfiles/Containerfile.comment" "Containerfile"
-        {
-            echo "FROM ${FROM_REF}"
-            echo "ARG BUILD_DATE=$(date +%Y-%m-%d)"
-            tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}"
-        } >>"Containerfile"
+        set -x
+        # shellcheck disable=SC2129
+        echo "FROM ${FROM_REF}" >> "Containerfile"
+        echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "Containerfile"
+        tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}" >> "Containerfile"
+        set +x
         cat "Containerfile"
         section_end prepare_containerfile
 
