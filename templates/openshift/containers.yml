@@ -19,8 +19,8 @@ objects:
         service: image-builder
       name: bootc-foundry-containers
     spec:
-      # run at midnight
-      schedule: 0 0 * * *
+      # every 20 minutes
+      schedule: "*/20 * * * *"
       concurrencyPolicy: Forbid
       # don't run if the job doesn't get scheduled within 30 minutes
       startingDeadlineSeconds: 1800
