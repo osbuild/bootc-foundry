@@ -16,22 +16,7 @@ are used by image builder.
 * `quay.io/centos-bootc/centos-bootc` versions Stream 9 and 10 (`x86_64`, `aarch64`)
 * `registry.redhat.io/rhelXX/rhel-bootc` (9 and 10) (`x86_64`)
 
-## Building Containerfiles
-
-All Containerfiles in this repo have `FROM` verb set to `.` which will fail to
-build without `--from` argument for podman or buildah. Additionally,
-`CONTAINERFILE` variable must be provided:
-
-    buildah build \
-        --from quay.io/fedora/fedora-bootc:43 \
-        --build-arg CONTAINERFILE="Containerfile.xxx" \
-        -f "Containerfile.xxx" \
-        -t my-image .
-
-The Containerfile itself, alongside with all required resource files, is
-embedded within in `/root` directory.
-
-## Publishing container images
+## Published container images
 
 Images are available as multi-arch image manifests with the following URIs:
 
