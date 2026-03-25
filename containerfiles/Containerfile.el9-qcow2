@@ -1,3 +1,0 @@
-FROM quay.io/centos-bootc/centos-bootc
-
-RUN echo TODO
