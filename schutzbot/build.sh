@@ -19,8 +19,6 @@ set -euo pipefail
 
 . "$(dirname "$0")/gitlab-utils.sh"
 
-CONTAINERFILES_DIR=${CONTAINERFILES_DIR:-containerfiles}
-
 if [ -n "${FROM_CREDS:-}" ] && [[ "${FROM_CREDS}" == *:* ]]; then
     FROM_USER="${FROM_CREDS%%:*}"
     FROM_PASS="${FROM_CREDS#*:}"
@@ -71,24 +69,20 @@ DST_REF=${DST_REF:-local}
 for ARCH in $ARCHES; do
     for TYPE in $TYPES; do
         section_start prepare_containerfile "Preparing Containerfile with FROM ${FROM_REF}"
-        cp -fv "$CONTAINERFILES_DIR/Containerfile.comment" "/tmp/Containerfile"
-        set -x
-        # shellcheck disable=SC2129
-        echo "FROM ${FROM_REF}" >> "/tmp/Containerfile"
-        echo "ARG BUILD_DATE=$(date +%Y-%m-%d)" >> "/tmp/Containerfile"
-        tail -n +2 "$CONTAINERFILES_DIR/Containerfile.${CONTAINERFILE}-${TYPE}" >> "/tmp/Containerfile"
-        set +x
-        cat "/tmp/Containerfile"
+        cp "containerfiles/Containerfile.comment" "Containerfile"
+        {
+            echo "FROM ${FROM_REF}"
+            echo "ARG BUILD_DATE=$(date +%Y-%m-%d)"
+            tail -n +2 "containerfiles/Containerfile.${CONTAINERFILE}-${TYPE}"
+        } >>"Containerfile"
+        cat "Containerfile"
         section_end prepare_containerfile
 
         section_start "build_${ARCH}_${TYPE}" "Building $FROM_REF arch $ARCH type $TYPE"
         buildah build --layers --arch="$ARCH" \
             --build-arg CONTAINERFILE="Containerfile" \
             --from "${FROM_REF}" \
-            --storage-driver=vfs \
-            --userns=host \
-            --isolation=chroot \
-            -f "/tmp/Containerfile" \
+            -f "Containerfile" \
             -t "$DST_REF-$ARCH-$TYPE" .
         section_end "build_${ARCH}_${TYPE}"
     done
@@ -108,19 +102,19 @@ for TYPE in $TYPES; do
 done
 
 section_start create_manifest "Creating manifest for $DST_REF"
-buildah manifest create --storage-driver=vfs "$DST_REF"
+buildah manifest create "$DST_REF"
 section_end create_manifest
 
 for TYPE in $TYPES; do
     section_start "add_to_manifest_${TYPE}" "Adding $TYPE to $DST_REF manifest"
     for ARCH in $ARCHES; do
-        buildah manifest add --storage-driver=vfs "$DST_REF" "$DST_REF-$ARCH-$TYPE"
+        buildah manifest add "$DST_REF" "$DST_REF-$ARCH-$TYPE"
     done
     section_end "add_to_manifest_${TYPE}"
 
     if [ -n "${DST_CREDS:-}" ] && [ -z "${NOPUSH:-}" ]; then
         section_start "push_manifest_${TYPE}" "Pushing manifest $DST_REF to registry"
-        buildah manifest push --storage-driver=vfs --all "$DST_REF" "docker://$DST_REF"
+        buildah manifest push --all "$DST_REF" "docker://$DST_REF"
         section_end "push_manifest_${TYPE}"
     else
         echo "Push skipped: DST_CREDS missing or NOPUSH set"
