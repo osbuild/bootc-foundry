@@ -28,7 +28,7 @@ spec:
   - name: image-expires-after
     value: 5d
   - name: dockerfile
-    value: containerfiles/rhel-10.1-qcow2
+    value: rhel-10.1-qcow2
   - name: path-context
     value: .
   pipelineSpec:
