@@ -25,7 +25,7 @@ spec:
   - name: output-image
     value: quay.io/redhat-user-workloads/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2:{{revision}}
   - name: dockerfile
-    value: containerfiles/rhel-10.1-qcow2
+    value: rhel-10.1-qcow2
   - name: path-context
     value: .
   pipelineSpec:
