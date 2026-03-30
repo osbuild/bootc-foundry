@@ -2,7 +2,7 @@
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
 
-FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+FROM quay.io/centos-bootc/centos-bootc:stream10
 
 ARG TARGETARCH
 
@@ -17,4 +17,4 @@ RUN dnf install -y \
 
 COPY el10-qcow2-${TARGETARCH}/usr/ /usr/
 
-COPY rhel-10.1-qcow2 /root/Containerfile
+COPY stream10-qcow2 /root/Containerfile
