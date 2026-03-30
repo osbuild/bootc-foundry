@@ -2,19 +2,19 @@
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
 
-FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+FROM quay.io/fedora/fedora-bootc:43
 
 ARG TARGETARCH
 
 #
 # Extra packages:
 #
-# @guest-agents: Guest agents for QEMU and libvirt.
+# @guest-agents: Guest agents for QEMU and libvirt
 #
 RUN dnf install -y \
     @guest-agents \
     && dnf clean all
 
-COPY el10-qcow2-${TARGETARCH}/usr/ /usr/
+COPY fedora-qcow2-${TARGETARCH}/usr/ /usr/
 
-COPY rhel-10.1-qcow2 /root/Containerfile
+COPY f43-qcow2 /root/Containerfile
