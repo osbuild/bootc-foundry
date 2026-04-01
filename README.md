@@ -41,6 +41,12 @@ Images are available as multi-arch image manifests with the following URIs:
 * `quay.io/osbuild/centos-bootc:stream10-gce`
 * `quay.io/osbuild/centos-bootc:stream10-qcow2`
 
+RHEL 10 (`x86_64`, `aarch64`)
+
+These repositories are not publicly available:
+
+* `quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2`
+
 ## Using derived images
 
 ```
