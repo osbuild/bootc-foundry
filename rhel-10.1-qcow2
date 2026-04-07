@@ -18,3 +18,7 @@ RUN dnf install -y \
 COPY el10-qcow2-${TARGETARCH}/usr/ /usr/
 
 COPY rhel-10.1-qcow2 /root/Containerfile
+
+LABEL cpe="cpe:/a:redhat:satellite:0.1::null"
+LABEL maintainer="Red Hat"
+LABEL summary="summary"
