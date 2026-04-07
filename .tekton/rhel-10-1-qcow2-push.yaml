@@ -23,7 +23,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2:{{revision}}
+    value: quay.io/redhat-user-workloads/insights-management-tenant/image-builder-bootc-foundry/rhel-10-1-qcow2:{{revision}}
   - name: dockerfile
     value: rhel-10.1-qcow2
   - name: path-context
