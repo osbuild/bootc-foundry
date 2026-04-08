@@ -8,18 +8,8 @@ ARG TARGETARCH
 
 RUN dnf -y install \
         cloud-init \
-        patch \
-        rng-tools \
-        rsync \
-        system-reinstall-bootc \
-        uuid \
         WALinuxAgent \
-        yum-utils \
     && dnf clean all
-
-
-
-
 
 
 
