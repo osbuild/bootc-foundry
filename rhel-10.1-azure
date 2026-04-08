@@ -6,23 +6,7 @@ FROM registry.redhat.io/rhel10/rhel-bootc:10.1
 
 ARG TARGETARCH
 
-RUN dnf -y install --allowerasing \
-        --exclude=aic94xx-firmware --exclude=alsa-firmware --exclude=alsa-lib \
-        --exclude=alsa-sof-firmware --exclude=alsa-tools-firmware --exclude=biosdevname \
-        --exclude=bolt --exclude=buildah --exclude=cockpit-podman \
-        --exclude=containernetworking-plugins --exclude=dnf-plugin-spacewalk \
-        --exclude=dracut-config-rescue --exclude=glibc-all-langpacks --exclude=iprutils \
-        --exclude=ivtv-firmware --exclude=iwl100-firmware --exclude=iwl1000-firmware \
-        --exclude=iwl105-firmware --exclude=iwl135-firmware --exclude=iwl2000-firmware \
-        --exclude=iwl2030-firmware --exclude=iwl3160-firmware --exclude=iwl3945-firmware \
-        --exclude=iwl4965-firmware --exclude=iwl5000-firmware --exclude=iwl5150-firmware \
-        --exclude=iwl6000-firmware --exclude=iwl6000g2a-firmware --exclude=iwl6000g2b-firmware \
-        --exclude=iwl6050-firmware --exclude=iwl7260-firmware --exclude=libertas-sd8686-firmware \
-        --exclude=libertas-sd8787-firmware --exclude=libertas-usb8388-firmware \
-        --exclude=microcode_ctl --exclude=NetworkManager-config-server --exclude=plymouth \
-        --exclude=podman --exclude=python3-dnf-plugin-spacewalk --exclude=python3-hwdata \
-        --exclude=python3-rhnlib --exclude=rhn-check --exclude=rhn-client-tools \
-        --exclude=rhn-setup --exclude=rhnlib --exclude=rhnsd --exclude=usb_modeswitch \
+RUN dnf -y install \
         @Server \
         bzip2 \
         chrony \
