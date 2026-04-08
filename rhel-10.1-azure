@@ -16,15 +16,12 @@ RUN dnf -y install \
         WALinuxAgent \
     && dnf clean all
 
+#
+# Avahi/ZeroConf must be disabled for cloud environments. Mask the service here,
+# and /etc/NetworkManager/conf.d/99-no-link-local.conf will be copied as well.
+RUN systemctl mask avahi-daemon.service avahi-daemon.socket
 
 
-
-
-
-
-
-
-RUN { echo 'NETWORKING=yes'; echo 'NOZEROCONF=yes'; } >> /etc/sysconfig/network
 
 
 
