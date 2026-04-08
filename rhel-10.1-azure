@@ -33,13 +33,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN printf '%s\n' 'blacklist amdgpu' > /etc/modprobe.d/blacklist-amdgpu.conf
-RUN printf '%s\n' 'blacklist intel_cstate' > /etc/modprobe.d/blacklist-intel-cstate.conf
-RUN printf '%s\n' 'blacklist floppy' > /etc/modprobe.d/blacklist-floppy.conf
-RUN printf '%s\n' 'blacklist nouveau' 'blacklist lbm-nouveau' > /etc/modprobe.d/blacklist-nouveau.conf
-RUN printf '%s\n' 'blacklist skx_edac' > /etc/modprobe.d/blacklist-skylake-edac.conf
-RUN printf '%s\n' 'blacklist intel_uncore' > /etc/modprobe.d/blacklist-intel_uncore.conf
-RUN printf '%s\n' 'blacklist acpi_cpufreq' > /etc/modprobe.d/blacklist-acpi_cpufreq.conf
 
 
 
