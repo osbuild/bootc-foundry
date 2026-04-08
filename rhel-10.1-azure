@@ -36,7 +36,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN { echo 'minlen = 6'; echo 'minclass = 3'; echo 'dcredit = 0'; echo 'ucredit = 0'; echo 'lcredit = 0'; echo 'ocredit = 0'; } >> /etc/security/pwquality.conf
 
 
 
