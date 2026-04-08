@@ -25,15 +25,7 @@ RUN dnf -y install \
 
 
 
-RUN echo 'KEYMAP=us' > /etc/vconsole.conf
-RUN mkdir -p /etc/X11/xorg.conf.d && cat > /etc/X11/xorg.conf.d/00-keyboard.conf <<'EOF'
-Section "InputClass"
-    Identifier "system-keyboard"
-    MatchIsKeyboard "on"
-    Option "XkbLayout" "us"
-EndSection
-EOF
-RUN chmod 0644 /etc/X11/xorg.conf.d/00-keyboard.conf
+
 
 
 
