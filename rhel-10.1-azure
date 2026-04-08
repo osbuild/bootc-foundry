@@ -8,22 +8,11 @@ ARG TARGETARCH
 
 RUN dnf -y install \
         @Server \
-        bzip2 \
-        chrony \
         cloud-init \
-        cloud-utils-growpart \
-        efibootmgr \
-        hyperv-daemons \
-        insights-client \
         langpacks-en \
-        lvm2 \
-        NetworkManager \
-        NetworkManager-cloud-setup \
-        nvme-cli \
         patch \
         rng-tools \
         rsync \
-        selinux-policy-targeted \
         system-reinstall-bootc \
         uuid \
         WALinuxAgent \
