@@ -31,9 +31,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN mkdir -p /etc/ssh/sshd_config.d \
-    && echo 'ClientAliveInterval 180' > /etc/ssh/sshd_config.d/50-azure-clientalive.conf
-
 
 
 RUN printf '%s\n' 'blacklist amdgpu' > /etc/modprobe.d/blacklist-amdgpu.conf
