@@ -6,6 +6,11 @@ FROM registry.redhat.io/rhel10/rhel-bootc:10.1
 
 ARG TARGETARCH
 
+#
+# Extra packages:
+#
+# cloud-init: cloud-init is a tool to configure cloud instances.
+# WALinuxAgent: WALinuxAgent is a tool to configure Windows Azure Linux Agent.
 RUN dnf -y install \
         cloud-init \
         WALinuxAgent \
