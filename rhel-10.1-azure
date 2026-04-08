@@ -1,0 +1,238 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
+FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+
+ARG TARGETARCH
+
+RUN dnf -y install --allowerasing \
+        --exclude=aic94xx-firmware --exclude=alsa-firmware --exclude=alsa-lib \
+        --exclude=alsa-sof-firmware --exclude=alsa-tools-firmware --exclude=biosdevname \
+        --exclude=bolt --exclude=buildah --exclude=cockpit-podman \
+        --exclude=containernetworking-plugins --exclude=dnf-plugin-spacewalk \
+        --exclude=dracut-config-rescue --exclude=glibc-all-langpacks --exclude=iprutils \
+        --exclude=ivtv-firmware --exclude=iwl100-firmware --exclude=iwl1000-firmware \
+        --exclude=iwl105-firmware --exclude=iwl135-firmware --exclude=iwl2000-firmware \
+        --exclude=iwl2030-firmware --exclude=iwl3160-firmware --exclude=iwl3945-firmware \
+        --exclude=iwl4965-firmware --exclude=iwl5000-firmware --exclude=iwl5150-firmware \
+        --exclude=iwl6000-firmware --exclude=iwl6000g2a-firmware --exclude=iwl6000g2b-firmware \
+        --exclude=iwl6050-firmware --exclude=iwl7260-firmware --exclude=libertas-sd8686-firmware \
+        --exclude=libertas-sd8787-firmware --exclude=libertas-usb8388-firmware \
+        --exclude=microcode_ctl --exclude=NetworkManager-config-server --exclude=plymouth \
+        --exclude=podman --exclude=python3-dnf-plugin-spacewalk --exclude=python3-hwdata \
+        --exclude=python3-rhnlib --exclude=rhn-check --exclude=rhn-client-tools \
+        --exclude=rhn-setup --exclude=rhnlib --exclude=rhnsd --exclude=usb_modeswitch \
+        @Server \
+        bzip2 \
+        chrony \
+        cloud-init \
+        cloud-utils-growpart \
+        efibootmgr \
+        hyperv-daemons \
+        insights-client \
+        langpacks-en \
+        lvm2 \
+        NetworkManager \
+        NetworkManager-cloud-setup \
+        nvme-cli \
+        patch \
+        rng-tools \
+        rsync \
+        selinux-policy-targeted \
+        system-reinstall-bootc \
+        uuid \
+        WALinuxAgent \
+        yum-utils \
+    && dnf clean all
+
+
+
+RUN mkdir -p /usr/local/sbin && cat > /usr/local/sbin/temp-disk-dataloss-warning <<'EOF'
+#!/bin/sh
+# /usr/local/sbin/temp-disk-dataloss-warning
+# Write dataloss warning file on mounted Azure resource disk
+
+AZURE_RESOURCE_DISK_PART1="/dev/disk/cloud/azure_resource-part1"
+
+MOUNTPATH=$(grep "$AZURE_RESOURCE_DISK_PART1" /etc/fstab | tr '\t' ' ' | cut -d' ' -f2)
+if [ -z "$MOUNTPATH" ]; then
+    echo "There is no mountpoint of $AZURE_RESOURCE_DISK_PART1 in /etc/fstab"
+    exit 0
+fi
+
+if [ "$MOUNTPATH" = "none" ]; then
+    echo "Mountpoint of $AZURE_RESOURCE_DISK_PART1 is not a path"
+    exit 1
+fi
+
+if ! mountpoint -q "$MOUNTPATH"; then
+    echo "$AZURE_RESOURCE_DISK_PART1 is not mounted at $MOUNTPATH"
+    exit 1
+fi
+
+echo "Creating a dataloss warning file at ${MOUNTPATH}/DATALOSS_WARNING_README.txt"
+
+cat <<'INNER' > "${MOUNTPATH}/DATALOSS_WARNING_README.txt"
+WARNING: THIS IS A TEMPORARY DISK.
+
+Any data stored on this drive is SUBJECT TO LOSS and THERE IS NO WAY TO RECOVER IT.
+
+Please do not use this disk for storing any personal or application data.
+
+INNER
+EOF
+RUN chmod 0755 /usr/local/sbin/temp-disk-dataloss-warning
+
+
+
+RUN cat > /etc/systemd/system/temp-disk-dataloss-warning.service <<'EOF'
+[Unit]
+Description=Azure temporary resource disk dataloss warning file creation
+After=multi-user.target cloud-final.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/temp-disk-dataloss-warning
+StandardOutput=journal+console
+
+[Install]
+WantedBy=default.target
+EOF
+
+
+
+RUN echo 'KEYMAP=us' > /etc/vconsole.conf
+RUN mkdir -p /etc/X11/xorg.conf.d && cat > /etc/X11/xorg.conf.d/00-keyboard.conf <<'EOF'
+Section "InputClass"
+    Identifier "system-keyboard"
+    MatchIsKeyboard "on"
+    Option "XkbLayout" "us"
+EndSection
+EOF
+RUN chmod 0644 /etc/X11/xorg.conf.d/00-keyboard.conf
+
+
+
+RUN { echo 'NETWORKING=yes'; echo 'NOZEROCONF=yes'; } >> /etc/sysconfig/network
+
+
+
+RUN systemctl enable firewalld sshd waagent chronyd \
+        nm-cloud-setup.service nm-cloud-setup.timer \
+        temp-disk-dataloss-warning.service
+
+
+
+RUN mkdir -p /etc/ssh/sshd_config.d \
+    && echo 'ClientAliveInterval 180' > /etc/ssh/sshd_config.d/50-azure-clientalive.conf
+
+
+
+RUN printf '%s\n' 'blacklist amdgpu' > /etc/modprobe.d/blacklist-amdgpu.conf
+RUN printf '%s\n' 'blacklist intel_cstate' > /etc/modprobe.d/blacklist-intel-cstate.conf
+RUN printf '%s\n' 'blacklist floppy' > /etc/modprobe.d/blacklist-floppy.conf
+RUN printf '%s\n' 'blacklist nouveau' 'blacklist lbm-nouveau' > /etc/modprobe.d/blacklist-nouveau.conf
+RUN printf '%s\n' 'blacklist skx_edac' > /etc/modprobe.d/blacklist-skylake-edac.conf
+RUN printf '%s\n' 'blacklist intel_uncore' > /etc/modprobe.d/blacklist-intel_uncore.conf
+RUN printf '%s\n' 'blacklist acpi_cpufreq' > /etc/modprobe.d/blacklist-acpi_cpufreq.conf
+
+
+
+RUN { echo 'minlen = 6'; echo 'minclass = 3'; echo 'dcredit = 0'; echo 'ucredit = 0'; echo 'lcredit = 0'; echo 'ocredit = 0'; } >> /etc/security/pwquality.conf
+
+
+
+RUN sed -i \
+        -e 's/^ResourceDisk\.Format=.*/ResourceDisk.Format=n/' \
+        -e 's/^ResourceDisk\.EnableSwap=.*/ResourceDisk.EnableSwap=n/' \
+        /etc/waagent.conf 2>/dev/null || true
+
+
+
+RUN mkdir -p /usr/lib/bootc/kargs.d
+RUN cat > /usr/lib/bootc/kargs.d/50-azure-rhel10.1-x86_64.toml <<'EOF'
+match-architectures = ["x86_64"]
+kargs = [
+    "ro",
+    "nvme_core.io_timeout=240",
+    "console=tty1",
+    "console=ttyS0",
+    "earlyprintk=ttyS0",
+    "rootdelay=300"
+]
+EOF
+RUN chmod 0644 /usr/lib/bootc/kargs.d/50-azure-rhel10.1-x86_64.toml
+
+
+
+RUN cat > /etc/default/grub <<'EOF'
+GRUB_TIMEOUT=10
+GRUB_TIMEOUT_STYLE=countdown
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DISABLE_SUBMENU=y
+GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"
+GRUB_DISABLE_RECOVERY="true"
+GRUB_TERMINAL=serial
+GRUB_TERMINAL_INPUT=serial
+GRUB_TERMINAL_OUTPUT=serial
+EOF
+RUN chmod 0644 /etc/default/grub
+
+
+
+RUN mkdir -p /etc/systemd/system/nm-cloud-setup.service.d \
+    && cat > /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-azure.conf <<'EOF'
+[Service]
+Environment=NM_CLOUD_SETUP_AZURE=yes
+EOF
+RUN chmod 0644 /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-azure.conf
+
+
+
+RUN systemctl set-default multi-user.target
+
+
+
+RUN mkdir -p /etc/NetworkManager/conf.d \
+    && cat > /etc/NetworkManager/conf.d/99-azure-unmanaged-devices.conf <<'EOF'
+[keyfile]
+unmanaged-devices=driver:mlx4_core;driver:mlx5_core;
+EOF
+RUN chmod 0644 /etc/NetworkManager/conf.d/99-azure-unmanaged-devices.conf
+
+
+
+RUN install -d /etc/chrony.d \
+    && printf '%s\n' 'refclock PHC /dev/ptp_hyperv poll 3 dpoll -2 offset 0.0' \
+        > /etc/chrony.d/10-azure-phc.conf
+
+
+
+RUN mkdir -p /etc/cloud/cloud.cfg.d
+RUN cat > /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg <<'EOF'
+reporting:
+  logging:
+    type: log
+  telemetry:
+    type: hyperv
+EOF
+RUN chmod 0644 /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg
+
+
+
+RUN cat > /etc/cloud/cloud.cfg.d/91-azure_datasource.cfg <<'EOF'
+datasource:
+  Azure:
+    apply_network_config: false
+datasource_list:
+  - Azure
+EOF
+RUN chmod 0644 /etc/cloud/cloud.cfg.d/91-azure_datasource.cfg
+
+
+
+#COPY el10-azure-${TARGETARCH}/usr/ /usr/
+#COPY rhel-10.1-azure /root/Containerfile
+#COPY azure/etc/ /etc/
+#COPY azure/usr/ /usr/
