@@ -57,9 +57,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN install -d /etc/chrony.d \
-    && printf '%s\n' 'refclock PHC /dev/ptp_hyperv poll 3 dpoll -2 offset 0.0' \
-        > /etc/chrony.d/10-azure-phc.conf
 
 
 
