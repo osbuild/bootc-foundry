@@ -46,19 +46,6 @@ RUN sed -i \
 
 
 
-RUN mkdir -p /usr/lib/bootc/kargs.d
-RUN cat > /usr/lib/bootc/kargs.d/50-azure-rhel10.1-x86_64.toml <<'EOF'
-match-architectures = ["x86_64"]
-kargs = [
-    "ro",
-    "nvme_core.io_timeout=240",
-    "console=tty1",
-    "console=ttyS0",
-    "earlyprintk=ttyS0",
-    "rootdelay=300"
-]
-EOF
-RUN chmod 0644 /usr/lib/bootc/kargs.d/50-azure-rhel10.1-x86_64.toml
 
 
 
