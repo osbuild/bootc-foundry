@@ -92,14 +92,6 @@ RUN chmod 0644 /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg
 
 
 
-RUN cat > /etc/cloud/cloud.cfg.d/91-azure_datasource.cfg <<'EOF'
-datasource:
-  Azure:
-    apply_network_config: false
-datasource_list:
-  - Azure
-EOF
-RUN chmod 0644 /etc/cloud/cloud.cfg.d/91-azure_datasource.cfg
 
 
 
