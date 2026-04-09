@@ -11,6 +11,7 @@ ARG TARGETARCH
 #
 # cloud-init: cloud-init is a tool to configure cloud instances.
 # WALinuxAgent: WALinuxAgent is a tool to configure Windows Azure Linux Agent.
+#
 RUN dnf -y install \
         cloud-init \
         WALinuxAgent \
@@ -19,44 +20,8 @@ RUN dnf -y install \
 #
 # Avahi/ZeroConf must be disabled for cloud environments. Mask the service here,
 # and /etc/NetworkManager/conf.d/99-no-link-local.conf will be copied as well.
+#
 RUN systemctl mask avahi-daemon.service avahi-daemon.socket
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Copy common configuration
 COPY azure/etc/ /etc/
