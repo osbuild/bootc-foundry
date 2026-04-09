@@ -48,12 +48,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN mkdir -p /etc/systemd/system/nm-cloud-setup.service.d \
-    && cat > /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-azure.conf <<'EOF'
-[Service]
-Environment=NM_CLOUD_SETUP_AZURE=yes
-EOF
-RUN chmod 0644 /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-azure.conf
 
 
 
