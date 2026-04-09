@@ -21,13 +21,11 @@ RUN dnf -y install \
 # and /etc/NetworkManager/conf.d/99-no-link-local.conf will be copied as well.
 RUN systemctl mask avahi-daemon.service avahi-daemon.socket
 
-
-
-
-
-RUN systemctl enable firewalld sshd waagent chronyd \
-        nm-cloud-setup.service nm-cloud-setup.timer \
-        temp-disk-dataloss-warning.service
+RUN systemctl enable \
+    waagent \
+    nm-cloud-setup.service \
+    nm-cloud-setup.timer \
+    temp-disk-dataloss-warning.service
 
 
 
