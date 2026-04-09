@@ -21,12 +21,6 @@ RUN dnf -y install \
 # and /etc/NetworkManager/conf.d/99-no-link-local.conf will be copied as well.
 RUN systemctl mask avahi-daemon.service avahi-daemon.socket
 
-RUN systemctl enable \
-    waagent \
-    nm-cloud-setup.service \
-    nm-cloud-setup.timer \
-    temp-disk-dataloss-warning.service
-
 
 
 
@@ -70,5 +64,12 @@ COPY azure/usr/ /usr/
 
 # Copy architecture-specific configuration
 COPY azure-${TARGETARCH}/usr/ /usr/
+
+# Enable services after custom services are copied
+RUN systemctl enable \
+    waagent \
+    nm-cloud-setup.service \
+    nm-cloud-setup.timer \
+    temp-disk-dataloss-warning.service
 
 COPY rhel-10.1-azure /root/Containerfile
