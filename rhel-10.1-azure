@@ -80,15 +80,6 @@ RUN install -d /etc/chrony.d \
 
 
 
-RUN mkdir -p /etc/cloud/cloud.cfg.d
-RUN cat > /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg <<'EOF'
-reporting:
-  logging:
-    type: log
-  telemetry:
-    type: hyperv
-EOF
-RUN chmod 0644 /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg
 
 
 
