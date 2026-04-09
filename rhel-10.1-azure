@@ -64,11 +64,11 @@ RUN systemctl enable \
 
 
 
-#COPY rhel-10.1-azure /root/Containerfile
-
 # Copy common configuration
 COPY azure/etc/ /etc/
 COPY azure/usr/ /usr/
 
 # Copy architecture-specific configuration
 COPY azure-${TARGETARCH}/usr/ /usr/
+
+COPY rhel-10.1-azure /root/Containerfile
