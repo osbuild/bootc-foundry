@@ -39,10 +39,6 @@ RUN systemctl enable firewalld sshd waagent chronyd \
 
 
 
-RUN sed -i \
-        -e 's/^ResourceDisk\.Format=.*/ResourceDisk.Format=n/' \
-        -e 's/^ResourceDisk\.EnableSwap=.*/ResourceDisk.EnableSwap=n/' \
-        /etc/waagent.conf 2>/dev/null || true
 
 
 
