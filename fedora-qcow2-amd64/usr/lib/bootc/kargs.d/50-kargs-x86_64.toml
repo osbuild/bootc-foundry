@@ -1,5 +1,0 @@
-match-architectures = ["x86_64"]
-kargs = [
-    "console=ttyS0",
-    "console=tty0",
-]
