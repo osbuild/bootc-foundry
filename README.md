@@ -1,14 +1,26 @@
 # Derived bootc images for image builder
 
-This repository contains `Containerfile` for each derived image types that
-are used by image builder.
+This repository contains a `Containerfile` for each derived image type used by
+image builder. The goal is to customize base bootc images of Fedora, CentOS
+Stream, or RHEL for the target environment (clouds, virtualization) by
+installing the tools needed for a successful installation or to align with Red
+Hat or cloud vendor recommendations.
+
+It mirrors what is defined for package-based OS images in distro definitions:
+https://github.com/osbuild/images/tree/main/data/distrodefs, but there is no
+parity. The core image content comes from the base container, we just add
+additional software and configuration to make the image integrate nicely with
+the target environment.
 
 ## Supported image formats
 
-* AWC EC2
+_This is a work in progress, not all image formats are available._
+
+* AWS EC2
 * Azure
 * GCE
 * qcow2
+* Anaconda installer
 
 ## Supported bootable container base images
 
@@ -16,46 +28,26 @@ are used by image builder.
 * `quay.io/centos-bootc/centos-bootc` versions Stream 9 and 10 (`x86_64`, `aarch64`)
 * `registry.redhat.io/rhelXX/rhel-bootc` (9 and 10) (`x86_64`)
 
-## Published container images
+## Organization
 
-Images are available as multi-arch image manifests with the following URIs:
+Each `Containerfile` is prefixed with `f` for Fedora, `stream` for CentOS
+Stream, and `rhel` for RHEL containers, and suffixed with one of: `qcow2`,
+`ec2`, `azure`, `gce`, or `installer`.
 
-[Fedora](https://quay.io/repository/osbuild/fedora-bootc) (`x86_64`, `aarch64`)
+Heredocs are not allowed in `Containerfile`s; files must be copied with `COPY`
+either from a common directory for the image type (for example `qcow2`) or from
+an OS version or architecture-specific tree (`qcow2-amd64`). Architecture
+names follow podman/docker conventions.
 
-* `quay.io/osbuild/fedora-bootc:43-ec2`
-* `quay.io/osbuild/fedora-bootc:43-azure`
-* `quay.io/osbuild/fedora-bootc:43-gce`
-* `quay.io/osbuild/fedora-bootc:43-qcow2`
+Comments explaining *why* are welcome.
 
-[CentOS 9 Stream](https://quay.io/repository/osbuild/centos-bootc) (`x86_64`, `aarch64`)
+## Build pipeline
 
-* `quay.io/osbuild/centos-bootc:stream9-ec2`
-* `quay.io/osbuild/centos-bootc:stream9-azure`
-* `quay.io/osbuild/centos-bootc:stream9-gce`
-* `quay.io/osbuild/centos-bootc:stream9-qcow2`
+Images are built in Konflux and published on `quay.io`. Repositories with RHEL
+containers are private. Currently available images:
 
-[CentOS 10 Stream](https://quay.io/repository/osbuild/centos-bootc) (`x86_64`, `aarch64`)
+* `quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2:latest`
 
-* `quay.io/osbuild/centos-bootc:stream10-ec2`
-* `quay.io/osbuild/centos-bootc:stream10-azure`
-* `quay.io/osbuild/centos-bootc:stream10-gce`
-* `quay.io/osbuild/centos-bootc:stream10-qcow2`
-
-RHEL 10 (`x86_64`, `aarch64`)
-
-These repositories are not publicly available:
-
-* `quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2`
-
-## Using derived images
-
-```
-image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-ec2 --bootc-default-fs ext4 ami
-image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-azure --bootc-default-fs ext4 vhd
-image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-gce --bootc-default-fs ext4 gce
-image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-qcow2 --bootc-default-fs ext4 qcow2
-```
-
-## LICENSE
+## License
 
 Apache License 2.0
