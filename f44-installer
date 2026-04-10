@@ -1,0 +1,79 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
+FROM quay.io/fedora/fedora-bootc:44
+
+ARG TARGETARCH
+
+# Packages needed for Anaconda; and build dependencies
+RUN dnf install -y \
+    anaconda \
+    anaconda-install-img-deps \
+    anaconda-dracut \
+    dracut-config-generic \
+    dracut-network \
+    net-tools \
+    grub2-efi-x64-cdboot \
+    plymouth \
+    default-fonts-core-sans \
+    default-fonts-other-sans \
+    google-noto-sans-cjk-fonts \
+    xorrisofs \
+    squashfs-tools \
+    && dnf clean all
+
+RUN mkdir -p /boot/efi \
+    && cp -rva /usr/lib/efi/*/*/EFI /boot/efi
+
+
+RUN mkdir -p /usr/lib/image-builder/bootc
+
+COPY <<EOT /usr/lib/image-builder/bootc/iso.yaml
+label: "Fedora-44-bootc-Installer"
+grub2:
+  entries:
+    - name: "Install Fedora 44 (bootc)"
+      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-44-bootc-Installer console=tty0 inst.graphical selinux=0 rhgb quiet"
+      initrd: "/images/pxeboot/initrd.img"
+EOT
+
+COPY <<EOT /usr/share/anaconda/interactive-defaults.ks
+bootc --source-imgref registry:quay.io/fedora/fedora-bootc:44 --target-imgref quay.io/fedora/fedora-bootc:44
+EOT
+
+RUN echo "install:x:0:0:root:/root:/usr/libexec/anaconda/run-anaconda" >> /etc/passwd && \
+    echo "install::14438:0:99999:7:::" >> /etc/shadow && \
+    passwd -d root
+
+RUN mv /usr/share/anaconda/list-harddrives-stub /usr/bin/list-harddrives && \
+    mv /etc/yum.repos.d /etc/anaconda.repos.d && \
+    ln -s /lib/systemd/system/anaconda.target /etc/systemd/system/default.target && \
+    rm -v /usr/lib/systemd/system-generators/systemd-gpt-auto-generator
+
+RUN rm /usr/lib/systemd/system/autovt@.service \
+    && ln -s /usr/lib/systemd/system/anaconda-shell@.service /usr/lib/systemd/system/autovt@.service
+
+RUN mkdir /usr/lib/systemd/logind.conf.d
+COPY <<EOT /usr/lib/systemd/logind.conf.d/anaconda-shell.conf
+[Login]
+ReserveVT=2
+EOT
+
+RUN mkdir "$(realpath /root)" && \
+    kernel=$(kernel-install list --json pretty | jq -r '.[] | select(.has_kernel == true) | .version') && \
+    DRACUT_NO_XATTR=1 dracut --force -v --zstd --reproducible --no-hostonly \
+        --add "anaconda" \
+        "/usr/lib/modules/${kernel}/initramfs.img" "${kernel}"
+
+RUN mkdir /etc/systemd/user/pipewire.service.d/
+COPY <<EOT /etc/systemd/user/pipewire.service.d/allowroot.conf
+[Unit]
+ConditionUser=
+EOT
+
+RUN mkdir /etc/systemd/user/pipewire.socket.d/
+COPY <<EOT /etc/systemd/user/pipewire.socket.d/allowroot.conf
+[Unit]
+ConditionUser=
+EOT
