@@ -15,6 +15,11 @@ RUN dnf install -y \
     @guest-agents \
     && dnf clean all
 
-COPY fedora-qcow2-${TARGETARCH}/usr/ /usr/
+# Copy common configuration
+#COPY qcow2/etc/ /etc/
+#COPY qcow2/usr/ /usr/
+
+# Copy architecture-specific configuration
+COPY qcow2-${TARGETARCH}/usr/ /usr/
 
 COPY f43-qcow2 /root/Containerfile
