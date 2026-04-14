@@ -10,10 +10,12 @@ ARG TARGETARCH
 # Extra packages:
 #
 # cloud-init: cloud-init is a tool to configure cloud instances.
+# hyperv-daemons: required by cloud init (warns with 'failed posting events to kvp')
 # WALinuxAgent: WALinuxAgent is a tool to configure Windows Azure Linux Agent.
 #
 RUN dnf -y install \
         cloud-init \
+		hyperv-daemons \
         WALinuxAgent \
     && dnf clean all
 
@@ -32,6 +34,9 @@ COPY azure-${TARGETARCH}/usr/ /usr/
 
 # Enable services after custom services are copied
 RUN systemctl enable \
+    hypervkvpd.service \
+    hypervvssd.service \
+    hypervfcopyd.service \
     waagent \
     nm-cloud-setup.service \
     nm-cloud-setup.timer \
