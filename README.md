@@ -56,6 +56,6 @@ image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-gce --boo
 image-builder-cli manifest --bootc-ref quay.io/osbuild/fedora-bootc:43-qcow2 --bootc-default-fs ext4 qcow2
 ```
 
-## LICENSE
+## LICENSE
 
 Apache License 2.0
