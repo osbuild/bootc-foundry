@@ -1,0 +1,45 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
+FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+
+ARG TARGETARCH
+
+#
+# Extra packages:
+#
+# cloud-init: cloud-init is a tool to configure cloud instances.
+# hyperv-daemons: required by cloud init (warns with 'failed posting events to kvp')
+# WALinuxAgent: WALinuxAgent is a tool to configure Windows Azure Linux Agent.
+#
+RUN dnf -y install \
+        cloud-init \
+		hyperv-daemons \
+        WALinuxAgent \
+    && dnf clean all
+
+#
+# Avahi/ZeroConf must be disabled for cloud environments. Mask the service here,
+# and /etc/NetworkManager/conf.d/99-no-link-local.conf will be copied as well.
+#
+RUN systemctl mask avahi-daemon.service avahi-daemon.socket
+
+# Copy common configuration
+COPY azure/etc/ /etc/
+COPY azure/usr/ /usr/
+
+# Copy architecture-specific configuration
+COPY azure-${TARGETARCH}/usr/ /usr/
+
+# Enable services after custom services are copied
+RUN systemctl enable \
+    hypervkvpd.service \
+    hypervvssd.service \
+    hypervfcopyd.service \
+    waagent \
+    nm-cloud-setup.service \
+    nm-cloud-setup.timer \
+    temp-disk-dataloss-warning.service
+
+COPY rhel-10.1-azure /root/Containerfile
