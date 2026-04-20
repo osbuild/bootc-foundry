@@ -1,0 +1,21 @@
+FROM quay.io/hummingbird-ci/bootc-os:latest
+
+ARG TARGETARCH
+
+# The hummingbird repositories do not contain all dependencies for
+# cloud-init at this point in time.
+RUN dnf install -y fedora-repos
+
+RUN dnf install -y \
+    cloud-init \
+    && dnf clean all
+
+COPY qcow2-${TARGETARCH}/usr/ /usr/
+COPY hummingbird-qcow2-${TARGETARCH}/usr/ /usr/
+
+COPY hummingbird-qcow2 /root/Containerfile
+
+RUN systemctl preset-all
+
+# regenerate host keys, they're not present in the base image for some reason
+RUN ssh-keygen -A
