@@ -6,21 +6,12 @@ FROM registry.redhat.io/rhel10/rhel-bootc:10.1
 
 ARG TARGETARCH
 
-# STAGE: org.osbuild.rpm
-# Install packages matching the manifest's package set
-# The manifest includes @core group plus additional EC2-specific packages
-# Firmware packages are excluded to reduce image size
-RUN dnf -y install --allowerasing \
-        --exclude=aic94xx-firmware --exclude=alsa-firmware --exclude=alsa-tools-firmware \
-        --exclude=biosdevname --exclude=firewalld --exclude=iprutils --exclude=ivtv-firmware \
-        --exclude=iwl1000-firmware --exclude=iwl100-firmware --exclude=iwl105-firmware \
-        --exclude=iwl135-firmware --exclude=iwl2000-firmware --exclude=iwl2030-firmware \
-        --exclude=iwl3160-firmware --exclude=iwl3945-firmware --exclude=iwl4965-firmware \
-        --exclude=iwl5000-firmware --exclude=iwl5150-firmware --exclude=iwl6000-firmware \
-        --exclude=iwl6000g2a-firmware --exclude=iwl6000g2b-firmware --exclude=iwl6050-firmware \
-        --exclude=iwl7260-firmware --exclude=libertas-sd8686-firmware \
-        --exclude=libertas-sd8787-firmware --exclude=libertas-usb8388-firmware \
-        --exclude=plymouth --exclude=dracut-config-rescue --exclude=qemu-guest-agent \
+#
+# Extra packages:
+#
+# @guest-agents: Guest agents for QEMU and libvirt.
+#
+RUN dnf -y install \
         @core \
         chrony \
         cloud-init \
