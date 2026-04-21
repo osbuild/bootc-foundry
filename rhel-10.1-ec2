@@ -10,17 +10,14 @@ ARG TARGETARCH
 # Extra packages:
 #
 # @cloud-init: Required on AWS EC2.
-# @tuned: Performance tuning for the system.
 #
 RUN dnf -y install \
     cloud-init \
-    tuned \
     && dnf clean all
 
 RUN systemctl enable \
     sshd \
     NetworkManager \
-    tuned \
     chronyd \
     nm-cloud-setup.service \
     nm-cloud-setup.timer \
