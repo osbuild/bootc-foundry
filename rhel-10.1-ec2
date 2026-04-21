@@ -17,19 +17,6 @@ RUN dnf -y install \
     tuned \
     && dnf clean all
 
-# STAGE: org.osbuild.fix-bls
-# Fix Boot Loader Specification entries (handled automatically by bootc)
-
-# STAGE: org.osbuild.locale
-# Set system locale to C.UTF-8
-RUN rm -f /etc/locale.conf \
-    && echo 'LANG=C.UTF-8' > /etc/locale.conf
-
-# STAGE: org.osbuild.timezone
-# Set timezone to UTC
-RUN rm -f /etc/localtime \
-    && ln -s /usr/share/zoneinfo/UTC /etc/localtime
-
 # STAGE: org.osbuild.systemd
 # Enable services as specified in the manifest's enabled_services list
 # Also sets default target to multi-user.target (done later in the file)
@@ -44,17 +31,6 @@ reboot.target
 RUN mkdir -p /etc/chrony.d \
 && cat > /etc/chrony.d/10-amazon-time.conf <<'EOF'
 server 169.254.169.123 iburst prefer minpoll 4 maxpoll 4
-EOF
-
-# STAGE: org.osbuild.keymap
-# Set keyboard layout to US (keymap=us, x11-keymap layouts=["us"])
-RUN echo 'KEYMAP=us' > /etc/vconsole.conf
-RUN mkdir -p /etc/X11/xorg.conf.d && cat > /etc/X11/xorg.conf.d/00-keyboard.conf <<'EOF'
-Section "InputClass"
-    Identifier "system-keyboard"
-    MatchIsKeyboard "on"
-    Option "XkbLayout" "us"
-EndSection
 EOF
 
 # STAGE: org.osbuild.kernel-cmdline
@@ -139,14 +115,6 @@ EOF
 # STAGE: org.osbuild.systemd
 # Set default systemd target to multi-user.target (non-graphical)
 RUN systemctl set-default multi-user.target
-
-# NOTE: The following manifest stages are NOT applicable to bootc containers:
-# - org.osbuild.fstab: Filesystem table is for disk images, not containers
-# - org.osbuild.grub2: Bootloader configuration is for disk images, not containers
-# - org.osbuild.selinux: SELinux relabeling is handled during bootc build/deployment
-# - Disk/partition stages (truncate, sfdisk, mkfs.fat, mkfs.xfs, copy, grub2.inst):
-#   These are part of the "image" pipeline for creating bootable disk images,
-#   not part of the OS filesystem tree that bootc containers represent
 
 #COPY rhel-10.1-ec2-${TARGETARCH}/usr/ /usr/
 #COPY rhel-10.1-ec2 /root/Containerfile
