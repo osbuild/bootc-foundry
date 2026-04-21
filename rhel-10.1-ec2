@@ -9,18 +9,12 @@ ARG TARGETARCH
 #
 # Extra packages:
 #
-# @guest-agents: Guest agents for QEMU and libvirt.
+# @cloud-init: Required on AWS EC2.
+# @tuned: Performance tuning for the system.
 #
 RUN dnf -y install \
-        @core \
-        cloud-init \
-        dhcpcd \
-        yum-utils \
-        dracut-config-generic \
-        langpacks-en \
-        rsync \
-        system-reinstall-bootc \
-        tuned \
+    cloud-init \
+    tuned \
     && dnf clean all
 
 # STAGE: org.osbuild.fix-bls
