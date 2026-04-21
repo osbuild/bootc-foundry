@@ -13,23 +13,14 @@ ARG TARGETARCH
 #
 RUN dnf -y install \
         @core \
-        chrony \
         cloud-init \
-        cloud-utils-growpart \
         dhcpcd \
         yum-utils \
         dracut-config-generic \
-        kdump-utils \
         langpacks-en \
-        NetworkManager-cloud-setup \
-        NetworkManager \
-        redhat-release \
-        redhat-release-eula \
         rsync \
         system-reinstall-bootc \
         tuned \
-        tar \
-        insights-client \
     && dnf clean all
 
 # STAGE: org.osbuild.fix-bls
