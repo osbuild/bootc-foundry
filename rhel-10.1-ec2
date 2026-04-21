@@ -17,13 +17,17 @@ RUN dnf -y install \
     tuned \
     && dnf clean all
 
-# STAGE: org.osbuild.systemd
-# Enable services as specified in the manifest's enabled_services list
-# Also sets default target to multi-user.target (done later in the file)
-RUN systemctl enable sshd NetworkManager tuned chronyd \
-nm-cloud-setup.service nm-cloud-setup.timer \
-cloud-init cloud-init-local cloud-config cloud-final \
-reboot.target
+RUN systemctl enable \
+    sshd \
+    NetworkManager \
+    tuned \
+    chronyd \
+    nm-cloud-setup.service \
+    nm-cloud-setup.timer \
+    cloud-init \
+    cloud-init-local \
+    cloud-config \
+    cloud-final
 
 # STAGE: org.osbuild.chrony
 # Configure chrony with EC2 time server (169.254.169.123)
