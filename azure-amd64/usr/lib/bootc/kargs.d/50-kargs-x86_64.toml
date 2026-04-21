@@ -1,0 +1,9 @@
+match-architectures = ["x86_64"]
+kargs = [
+    "ro",
+    "console=ttyS0",
+    "console=tty0",
+    "earlyprintk=ttyS0",
+    "nvme_core.io_timeout=240",
+    "rootdelay=300"
+]
