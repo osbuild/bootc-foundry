@@ -29,14 +29,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.chrony
-# Configure chrony with EC2 time server (169.254.169.123)
-# Matches manifest options: iburst=true, prefer=true, minpoll=4, maxpoll=4
-RUN mkdir -p /etc/chrony.d \
-&& cat > /etc/chrony.d/10-amazon-time.conf <<'EOF'
-server 169.254.169.123 iburst prefer minpoll 4 maxpoll 4
-EOF
-
 # STAGE: org.osbuild.kernel-cmdline
 # Set kernel command line options: console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295
 # In bootc, we use kargs.d instead of /etc/kernel/cmdline
