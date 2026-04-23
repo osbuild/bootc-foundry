@@ -1,0 +1,176 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
+FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+
+ARG TARGETARCH
+
+# STAGE: org.osbuild.rpm
+# Install packages matching the manifest's package set
+# The manifest includes @core group plus additional EC2-specific packages
+# Firmware packages are excluded to reduce image size
+RUN dnf -y install --allowerasing \
+        --exclude=aic94xx-firmware --exclude=alsa-firmware --exclude=alsa-tools-firmware \
+        --exclude=biosdevname --exclude=firewalld --exclude=iprutils --exclude=ivtv-firmware \
+        --exclude=iwl1000-firmware --exclude=iwl100-firmware --exclude=iwl105-firmware \
+        --exclude=iwl135-firmware --exclude=iwl2000-firmware --exclude=iwl2030-firmware \
+        --exclude=iwl3160-firmware --exclude=iwl3945-firmware --exclude=iwl4965-firmware \
+        --exclude=iwl5000-firmware --exclude=iwl5150-firmware --exclude=iwl6000-firmware \
+        --exclude=iwl6000g2a-firmware --exclude=iwl6000g2b-firmware --exclude=iwl6050-firmware \
+        --exclude=iwl7260-firmware --exclude=libertas-sd8686-firmware \
+        --exclude=libertas-sd8787-firmware --exclude=libertas-usb8388-firmware \
+        --exclude=plymouth --exclude=dracut-config-rescue --exclude=qemu-guest-agent \
+        @core \
+        chrony \
+        cloud-init \
+        cloud-utils-growpart \
+        dhcpcd \
+        yum-utils \
+        dracut-config-generic \
+        kdump-utils \
+        langpacks-en \
+        NetworkManager-cloud-setup \
+        NetworkManager \
+        redhat-release \
+        redhat-release-eula \
+        rsync \
+        system-reinstall-bootc \
+        tuned \
+        tar \
+        insights-client \
+    && dnf clean all
+
+# STAGE: org.osbuild.fix-bls
+# Fix Boot Loader Specification entries (handled automatically by bootc)
+
+# STAGE: org.osbuild.locale
+# Set system locale to C.UTF-8
+RUN rm -f /etc/locale.conf \
+    && echo 'LANG=C.UTF-8' > /etc/locale.conf
+
+# STAGE: org.osbuild.timezone
+# Set timezone to UTC
+RUN rm -f /etc/localtime \
+    && ln -s /usr/share/zoneinfo/UTC /etc/localtime
+
+# STAGE: org.osbuild.systemd
+# Enable services as specified in the manifest's enabled_services list
+# Also sets default target to multi-user.target (done later in the file)
+RUN systemctl enable sshd NetworkManager tuned chronyd \
+nm-cloud-setup.service nm-cloud-setup.timer \
+cloud-init cloud-init-local cloud-config cloud-final \
+reboot.target
+
+# STAGE: org.osbuild.chrony
+# Configure chrony with EC2 time server (169.254.169.123)
+# Matches manifest options: iburst=true, prefer=true, minpoll=4, maxpoll=4
+RUN mkdir -p /etc/chrony.d \
+&& cat > /etc/chrony.d/10-amazon-time.conf <<'EOF'
+server 169.254.169.123 iburst prefer minpoll 4 maxpoll 4
+EOF
+
+# STAGE: org.osbuild.keymap
+# Set keyboard layout to US (keymap=us, x11-keymap layouts=["us"])
+RUN echo 'KEYMAP=us' > /etc/vconsole.conf
+RUN mkdir -p /etc/X11/xorg.conf.d && cat > /etc/X11/xorg.conf.d/00-keyboard.conf <<'EOF'
+Section "InputClass"
+    Identifier "system-keyboard"
+    MatchIsKeyboard "on"
+    Option "XkbLayout" "us"
+EndSection
+EOF
+
+# STAGE: org.osbuild.kernel-cmdline
+# Set kernel command line options: console=tty0 console=ttyS0,115200n8 nvme_core.io_timeout=4294967295
+# In bootc, we use kargs.d instead of /etc/kernel/cmdline
+RUN mkdir -p /usr/lib/bootc/kargs.d
+RUN cat > /usr/lib/bootc/kargs.d/50-ec2-ami-x86_64.toml <<'EOF'
+match-architectures = ["x86_64"]
+kargs = [
+    "console=tty0",
+    "console=ttyS0,115200n8",
+    "nvme_core.io_timeout=4294967295"
+]
+EOF
+RUN cat > /usr/lib/bootc/kargs.d/50-ec2-ami-aarch64.toml <<'EOF'
+match-architectures = ["aarch64"]
+kargs = [
+    "console=tty0",
+    "console=ttyS0,115200n8",
+    "nvme_core.io_timeout=4294967295"
+]
+EOF
+
+# STAGE: org.osbuild.sysconfig
+# Configure network sysconfig (networking=true, no_zero_conf=true)
+# Also sets kernel.update_default=true and kernel.default_kernel="kernel"
+RUN { echo 'NETWORKING=yes'; echo 'NOZEROCONF=yes'; } >> /etc/sysconfig/network \
+    && mkdir -p /etc/sysconfig \
+    && { echo 'UPDATEDEFAULT=yes'; echo 'DEFAULTKERNEL=kernel'; } > /etc/sysconfig/kernel
+
+# STAGE: org.osbuild.systemd-logind
+# Configure systemd-logind with NAutoVTs=0 to disable automatic VTs
+RUN mkdir -p /etc/systemd/logind.conf.d \
+    && cat > /etc/systemd/logind.conf.d/00-getty-fixes.conf <<'EOF'
+[Login]
+NAutoVTs=0
+EOF
+
+# STAGE: org.osbuild.cloud-init
+# Configure cloud-init default user as ec2-user
+RUN mkdir -p /etc/cloud/cloud.cfg.d \
+    && cat > /etc/cloud/cloud.cfg.d/00-rhel-default-user.cfg <<'EOF'
+system_info:
+  default_user:
+    name: ec2-user
+EOF
+
+# STAGE: org.osbuild.modprobe (3 instances)
+# Blacklist GPU drivers (nouveau, amdgpu) and i2c_piix4 module
+RUN printf '%s\n' 'blacklist nouveau' > /etc/modprobe.d/blacklist-nouveau.conf
+RUN printf '%s\n' 'blacklist amdgpu' > /etc/modprobe.d/blacklist-amdgpu.conf
+RUN printf '%s\n' 'blacklist i2c_piix4' > /etc/modprobe.d/blacklist-i2c_piix4.conf
+
+# STAGE: org.osbuild.systemd.unit
+# Configure NetworkManager cloud setup for EC2
+# Sets Environment: NM_CLOUD_SETUP_EC2=yes
+RUN mkdir -p /etc/systemd/system/nm-cloud-setup.service.d \
+    && cat > /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-ec2.conf <<'EOF'
+[Service]
+Environment=NM_CLOUD_SETUP_EC2=yes
+EOF
+
+# STAGE: org.osbuild.sshd.config
+# Disable password authentication (PasswordAuthentication=false)
+RUN mkdir -p /etc/ssh/sshd_config.d \
+    && printf '%s\n' 'PasswordAuthentication no' > /etc/ssh/sshd_config.d/50-ami.conf
+
+# STAGE: org.osbuild.dracut.conf
+# Add EC2-specific drivers to dracut: nvme and xen-blkfront
+RUN mkdir -p /etc/dracut.conf.d \
+    && cat > /etc/dracut.conf.d/ec2.conf <<'EOF'
+add_drivers+=" nvme xen-blkfront "
+EOF
+
+# STAGE: org.osbuild.rhsm.facts
+# Set Red Hat Subscription Manager facts
+RUN mkdir -p /etc/rhsm/facts \
+    && cat > /etc/rhsm/facts/osbuild.facts <<'EOF'
+{"image-builder.osbuild-composer.api-type": "image-builder-cli"}
+EOF
+
+# STAGE: org.osbuild.systemd
+# Set default systemd target to multi-user.target (non-graphical)
+RUN systemctl set-default multi-user.target
+
+# NOTE: The following manifest stages are NOT applicable to bootc containers:
+# - org.osbuild.fstab: Filesystem table is for disk images, not containers
+# - org.osbuild.grub2: Bootloader configuration is for disk images, not containers
+# - org.osbuild.selinux: SELinux relabeling is handled during bootc build/deployment
+# - Disk/partition stages (truncate, sfdisk, mkfs.fat, mkfs.xfs, copy, grub2.inst):
+#   These are part of the "image" pipeline for creating bootable disk images,
+#   not part of the OS filesystem tree that bootc containers represent
+
+#COPY rhel-10.1-ec2-${TARGETARCH}/usr/ /usr/
+#COPY rhel-10.1-ec2 /root/Containerfile
