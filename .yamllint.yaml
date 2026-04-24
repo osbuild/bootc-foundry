@@ -1,6 +1,9 @@
 ---
 extends: default
 
+ignore: |
+  .tekton/
+
 rules:
   document-start: disable
   line-length:
