@@ -1,0 +1,6 @@
+match-architectures = ["aarch64"]
+kargs = [
+    "console=ttyAMA0",
+    "console=tty0",
+    "systemd.firstboot=off"
+]
