@@ -510,6 +510,15 @@ spec:
       optional: true
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhel-10-1-ec2
+  taskRunSpecs:
+    - pipelineTaskName: build-container
+      stepSpecs:
+        - name: sbom-syft-generate
+          computeResources:
+            requests:
+              memory: 16Gi
+            limits:
+              memory: 16Gi
   workspaces:
   - name: git-auth
     secret:
