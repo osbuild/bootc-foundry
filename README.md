@@ -46,7 +46,11 @@ Comments explaining *why* are welcome.
 Images are built in Konflux and published on `quay.io`. Repositories with RHEL
 containers are private. Currently available images:
 
-* `quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2:latest`
+* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-qcow2)
+* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-ec2:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-ec2)
+* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-azure:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-azure)
+* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-gcp:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-gcp)
+* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-installer:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10.1-installer)
 
 ## License
 
