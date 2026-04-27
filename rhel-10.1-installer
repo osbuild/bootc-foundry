@@ -41,11 +41,11 @@ RUN dnf install -y \
 RUN mkdir -p /usr/lib/image-builder/bootc
 
 COPY <<EOT /usr/lib/image-builder/bootc/iso.yaml
-label: "CentOS-Stream-10-bootc-Installer"
+label: "RHEL-10.1-bootc-Installer"
 grub2:
   entries:
-    - name: "Install CentOS Stream 10 (bootc)"
-      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-10-bootc-Installer console=tty0 inst.graphical selinux=0 rhgb quiet"
+    - name: "Install RHEL 10.1 (bootc)"
+      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=RHEL-10.1-bootc-Installer console=tty0 inst.graphical selinux=0 rhgb quiet"
       initrd: "/images/pxeboot/initrd.img"
 EOT
 
