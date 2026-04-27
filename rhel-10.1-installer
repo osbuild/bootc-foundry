@@ -6,6 +6,21 @@ FROM registry.redhat.io/rhel10/rhel-bootc:10.1
 
 ARG TARGETARCH
 
+# NOTE: bootc containers are shipped with empty /boot. While these images are created,
+# /boot is moved to /usr/lib/bootupd/updates by bootupd. When bootc install is
+# run to create a disk image, it calls bootupd that unpacks /usr/lib/bootupd/updates
+# back into /boot/efi.
+#
+# For the installer ISO image, we need the /boot to be populated, to fulfill the
+# container-native ISO contract (https://github.com/ondrejbudai/bootc-isos#container-native-iso-contract-v010).
+#
+# Reinstall shim-x64 to ensure that required files are not missing from /boot/efi/EFI
+#
+# This will have to change later due to https://fedoraproject.org/wiki/Changes/BootLoaderUpdatesPhase1
+RUN dnf reinstall -y \
+    shim-x64 \
+    && dnf clean all
+
 # Packages needed for Anaconda; and build dependencies
 RUN dnf install -y \
     anaconda \
@@ -22,11 +37,6 @@ RUN dnf install -y \
     xorriso \
     squashfs-tools \
     && dnf clean all
-
-# XXX: https://github.com/osbuild/bootc-foundry/issues/50
-#RUN mkdir -p /boot/efi \
-#    && cp -rva /usr/lib/efi/*/*/EFI /boot/efi
-
 
 RUN mkdir -p /usr/lib/image-builder/bootc
 
