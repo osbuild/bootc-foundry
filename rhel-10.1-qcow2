@@ -2,7 +2,7 @@
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
 
-FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
 ARG TARGETARCH
 
