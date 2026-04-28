@@ -37,4 +37,4 @@ RUN systemctl enable \
     nm-cloud-setup.timer \
     temp-disk-dataloss-warning.service
 
-COPY rhel-10.1-azure /root/Containerfile
+COPY rhel-10-azure /root/Containerfile

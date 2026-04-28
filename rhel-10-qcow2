@@ -24,4 +24,4 @@ RUN dnf install -y \
 # Copy architecture-specific configuration
 COPY qcow2-${TARGETARCH}/usr/ /usr/
 
-COPY rhel-10.1-qcow2 /root/Containerfile
+COPY rhel-10-qcow2 /root/Containerfile
