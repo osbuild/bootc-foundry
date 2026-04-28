@@ -10,9 +10,11 @@ ARG TARGETARCH
 # Extra packages:
 #
 # @guest-agents: Guest agents for QEMU and libvirt.
+# cloud-init: cloud instance configuration tool
 #
 RUN dnf install -y \
     @guest-agents \
+    cloud-init \
     && dnf clean all
 
 # Copy common configuration

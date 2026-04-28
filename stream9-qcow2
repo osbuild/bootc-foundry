@@ -10,10 +10,15 @@ ARG TARGETARCH
 # Extra packages:
 #
 # @guest-agents: Guest agents for QEMU and libvirt.
+# cloud-init: cloud instance configuration tool
 #
 RUN dnf install -y \
     @guest-agents \
+    cloud-init \
     && dnf clean all
+
+# Unlike EL10 or Fedora, EL9 doesn't have cloud-init in systemd preset, so we need to enable it manually.
+RUN systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service
 
 # Copy common configuration
 #COPY qcow2/etc/ /etc/
