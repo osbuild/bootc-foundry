@@ -41,6 +41,20 @@ names follow podman/docker conventions.
 
 Comments explaining *why* are welcome.
 
+## Adding new variants
+
+To add a new Containerfile:
+
+- Create a new `Containerfile` in this repo.
+- Add a new component to Konflux config. The name must match the filename, dots
+  are not allowed in component names.
+- Konflux will create .tekton template PR in this repo, tests will fail.
+- Increase memory for pods in the submitted .tekton files (see other files for
+  examples).
+- Link secret named `registry-redhat-io` in the Konflux UI for the newly
+  created component. This step can be skipped for non-RH content.
+- Merge the .tekton files into this repo.
+
 ## Build pipeline
 
 Images are built in Konflux and published on `quay.io`. Repositories with RHEL
