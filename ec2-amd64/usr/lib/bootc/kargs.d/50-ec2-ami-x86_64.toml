@@ -1,0 +1,6 @@
+match-architectures = ["x86_64"]
+kargs = [
+    "console=tty0",
+    "console=ttyS0,115200n8",
+    "nvme_core.io_timeout=4294967295"
+]
