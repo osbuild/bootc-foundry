@@ -26,9 +26,5 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.systemd
-# Set default systemd target to multi-user.target (non-graphical)
-RUN systemctl set-default multi-user.target
-
 COPY rhel-10.1-ec2-${TARGETARCH}/usr/ /usr/
 COPY rhel-10.1-ec2 /root/Containerfile
