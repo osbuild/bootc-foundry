@@ -26,15 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.cloud-init
-# Configure cloud-init default user as ec2-user
-RUN mkdir -p /etc/cloud/cloud.cfg.d \
-    && cat > /etc/cloud/cloud.cfg.d/00-rhel-default-user.cfg <<'EOF'
-system_info:
-  default_user:
-    name: ec2-user
-EOF
-
 # STAGE: org.osbuild.modprobe (3 instances)
 # Blacklist GPU drivers (nouveau, amdgpu) and i2c_piix4 module
 RUN printf '%s\n' 'blacklist nouveau' > /etc/modprobe.d/blacklist-nouveau.conf
