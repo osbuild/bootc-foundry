@@ -26,14 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.systemd-logind
-# Configure systemd-logind with NAutoVTs=0 to disable automatic VTs
-RUN mkdir -p /etc/systemd/logind.conf.d \
-    && cat > /etc/systemd/logind.conf.d/00-getty-fixes.conf <<'EOF'
-[Login]
-NAutoVTs=0
-EOF
-
 # STAGE: org.osbuild.cloud-init
 # Configure cloud-init default user as ec2-user
 RUN mkdir -p /etc/cloud/cloud.cfg.d \
