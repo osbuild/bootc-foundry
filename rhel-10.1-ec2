@@ -26,12 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.modprobe (3 instances)
-# Blacklist GPU drivers (nouveau, amdgpu) and i2c_piix4 module
-RUN printf '%s\n' 'blacklist nouveau' > /etc/modprobe.d/blacklist-nouveau.conf
-RUN printf '%s\n' 'blacklist amdgpu' > /etc/modprobe.d/blacklist-amdgpu.conf
-RUN printf '%s\n' 'blacklist i2c_piix4' > /etc/modprobe.d/blacklist-i2c_piix4.conf
-
 # STAGE: org.osbuild.systemd.unit
 # Configure NetworkManager cloud setup for EC2
 # Sets Environment: NM_CLOUD_SETUP_EC2=yes
