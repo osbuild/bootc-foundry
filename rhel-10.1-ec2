@@ -26,13 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.sysconfig
-# Configure network sysconfig (networking=true, no_zero_conf=true)
-# Also sets kernel.update_default=true and kernel.default_kernel="kernel"
-RUN { echo 'NETWORKING=yes'; echo 'NOZEROCONF=yes'; } >> /etc/sysconfig/network \
-    && mkdir -p /etc/sysconfig \
-    && { echo 'UPDATEDEFAULT=yes'; echo 'DEFAULTKERNEL=kernel'; } > /etc/sysconfig/kernel
-
 # STAGE: org.osbuild.systemd-logind
 # Configure systemd-logind with NAutoVTs=0 to disable automatic VTs
 RUN mkdir -p /etc/systemd/logind.conf.d \
