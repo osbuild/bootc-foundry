@@ -26,13 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.dracut.conf
-# Add EC2-specific drivers to dracut: nvme and xen-blkfront
-RUN mkdir -p /etc/dracut.conf.d \
-    && cat > /etc/dracut.conf.d/ec2.conf <<'EOF'
-add_drivers+=" nvme xen-blkfront "
-EOF
-
 # STAGE: org.osbuild.rhsm.facts
 # Set Red Hat Subscription Manager facts
 RUN mkdir -p /etc/rhsm/facts \
