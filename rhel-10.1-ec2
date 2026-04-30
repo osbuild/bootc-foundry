@@ -26,15 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.systemd.unit
-# Configure NetworkManager cloud setup for EC2
-# Sets Environment: NM_CLOUD_SETUP_EC2=yes
-RUN mkdir -p /etc/systemd/system/nm-cloud-setup.service.d \
-    && cat > /etc/systemd/system/nm-cloud-setup.service.d/10-rh-enable-for-ec2.conf <<'EOF'
-[Service]
-Environment=NM_CLOUD_SETUP_EC2=yes
-EOF
-
 # STAGE: org.osbuild.sshd.config
 # Disable password authentication (PasswordAuthentication=false)
 RUN mkdir -p /etc/ssh/sshd_config.d \
