@@ -26,11 +26,6 @@ RUN systemctl enable \
     cloud-config \
     cloud-final
 
-# STAGE: org.osbuild.sshd.config
-# Disable password authentication (PasswordAuthentication=false)
-RUN mkdir -p /etc/ssh/sshd_config.d \
-    && printf '%s\n' 'PasswordAuthentication no' > /etc/ssh/sshd_config.d/50-ami.conf
-
 # STAGE: org.osbuild.dracut.conf
 # Add EC2-specific drivers to dracut: nvme and xen-blkfront
 RUN mkdir -p /etc/dracut.conf.d \
