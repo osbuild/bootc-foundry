@@ -1,1 +1,32 @@
-FROM registry.redhat.io/rhel10/rhel-bootc:latest
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
+FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+
+ARG TARGETARCH
+
+#
+# Extra packages:
+#
+# @cloud-init: Required on AWS EC2.
+#
+RUN dnf -y install \
+    cloud-init \
+    && dnf clean all
+
+RUN systemctl enable \
+    sshd \
+    NetworkManager \
+    chronyd \
+    nm-cloud-setup.service \
+    nm-cloud-setup.timer \
+    cloud-init \
+    cloud-init-local \
+    cloud-config \
+    cloud-final
+
+COPY ec2/etc/ /etc/
+COPY ec2-${TARGETARCH}/usr/ /usr/
+
+COPY rhel-10-ec2 /root/Containerfile
