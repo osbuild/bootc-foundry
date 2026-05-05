@@ -32,18 +32,13 @@ RUN dnf -y install --allowerasing \
         insights-client \
     && dnf clean all
 
-# org.osbuild.dnf-automatic.config
 RUN sed -i \
         -e 's/^apply_updates[[:space:]]*=.*/apply_updates = yes/' \
         -e 's/^upgrade_type[[:space:]]*=.*/upgrade_type = security/' \
         /etc/dnf/automatic.conf
 
-# XXX: we could also not install firewalld in the first place
 RUN firewall-offline-cmd --set-default-zone=trusted
-# XXX: alternatively (will test this)
-#RUN sed -i 's/^DefaultZone=.*/DefaultZone=trusted/' /etc/firewalld/firewalld.conf
 
-# org.osbuild.systemd
 RUN systemctl enable \
     sshd \
     rngd \
@@ -51,9 +46,14 @@ RUN systemctl enable \
     firewalld \
     chronyd
 
+# Disable services:
+# - reboot.target: carried over from package-based distro defs
+# - sshd-keygen@.service: carried over from package-based distro defs
+# - google-disk-expand.service: bootc-generic-growpart will handle this
 RUN systemctl disable \
     reboot.target \
-    sshd-keygen@
+    sshd-keygen@ \
+    google-disk-expand.service
 
 COPY gcp/etc/ /etc/
 
