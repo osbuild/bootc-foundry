@@ -1,0 +1,7 @@
+# Same kargs as x86_64 GCE image; console is typically still ttyS0 on GCP.
+match-architectures = ["aarch64"]
+kargs = [
+    "biosdevname=0",
+    "scsi_mod.use_blk_mq=Y",
+    "console=ttyS0,38400n8d"
+]

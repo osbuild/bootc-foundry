@@ -1,1 +1,60 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
+
+ARG TARGETARCH
+
+# Copy arch-specific files before dnf install
+COPY gcp-${TARGETARCH}/etc/ /etc/
+COPY gcp-${TARGETARCH}/usr/ /usr/
+
+RUN dnf -y install --allowerasing \
+        firewalld \
+        @core \
+        langpacks-en \
+        acpid \
+        dnf-automatic \
+        net-tools \
+        python3 \
+        rng-tools \
+        tar \
+        vim \
+        google-compute-engine \
+        google-osconfig-agent \
+        gce-disk-expand \
+        chrony \
+        timedatex \
+        grub2-tools \
+        grub2-tools-minimal \
+        tuned \
+        insights-client \
+    && dnf clean all
+
+# org.osbuild.dnf-automatic.config
+RUN sed -i \
+        -e 's/^apply_updates[[:space:]]*=.*/apply_updates = yes/' \
+        -e 's/^upgrade_type[[:space:]]*=.*/upgrade_type = security/' \
+        /etc/dnf/automatic.conf
+
+# XXX: we could also not install firewalld in the first place
+RUN firewall-offline-cmd --set-default-zone=trusted
+# XXX: alternatively (will test this)
+#RUN sed -i 's/^DefaultZone=.*/DefaultZone=trusted/' /etc/firewalld/firewalld.conf
+
+# org.osbuild.systemd
+RUN systemctl enable \
+    sshd \
+    rngd \
+    dnf-automatic.timer \
+    firewalld \
+    chronyd
+
+RUN systemctl disable \
+    reboot.target \
+    sshd-keygen@
+
+COPY gcp/etc/ /etc/
+
+COPY rhel-10-gcp /root/Containerfile
