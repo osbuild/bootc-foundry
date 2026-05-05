@@ -11,22 +11,11 @@ COPY gcp-${TARGETARCH}/etc/ /etc/
 COPY gcp-${TARGETARCH}/usr/ /usr/
 
 RUN dnf -y install \
-        firewalld \
         google-compute-engine \
-        google-osconfig-agent
+        google-osconfig-agent \
     && dnf clean all
 
-RUN firewall-offline-cmd --set-default-zone=trusted
-
-RUN systemctl enable \
-    sshd \
-    firewalld \
-    chronyd
-
-RUN systemctl disable \
-    reboot.target \
-    sshd-keygen@
-
+# Copy common configuration
 COPY gcp/etc/ /etc/
 
 COPY rhel-10-gcp /root/Containerfile
