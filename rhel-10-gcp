@@ -12,22 +12,14 @@ COPY gcp-${TARGETARCH}/usr/ /usr/
 
 RUN dnf -y install \
         firewalld \
-        dnf-automatic \
         google-compute-engine \
         google-osconfig-agent
     && dnf clean all
-
-RUN sed -i \
-        -e 's/^apply_updates[[:space:]]*=.*/apply_updates = yes/' \
-        -e 's/^upgrade_type[[:space:]]*=.*/upgrade_type = security/' \
-        /etc/dnf/automatic.conf
 
 RUN firewall-offline-cmd --set-default-zone=trusted
 
 RUN systemctl enable \
     sshd \
-    rngd \
-    dnf-automatic.timer \
     firewalld \
     chronyd
 
