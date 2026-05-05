@@ -10,26 +10,11 @@ ARG TARGETARCH
 COPY gcp-${TARGETARCH}/etc/ /etc/
 COPY gcp-${TARGETARCH}/usr/ /usr/
 
-RUN dnf -y install --allowerasing \
+RUN dnf -y install \
         firewalld \
-        @core \
-        langpacks-en \
-        acpid \
         dnf-automatic \
-        net-tools \
-        python3 \
-        rng-tools \
-        tar \
-        vim \
         google-compute-engine \
-        google-osconfig-agent \
-        gce-disk-expand \
-        chrony \
-        timedatex \
-        grub2-tools \
-        grub2-tools-minimal \
-        tuned \
-        insights-client \
+        google-osconfig-agent
     && dnf clean all
 
 RUN sed -i \
@@ -46,14 +31,9 @@ RUN systemctl enable \
     firewalld \
     chronyd
 
-# Disable services:
-# - reboot.target: carried over from package-based distro defs
-# - sshd-keygen@.service: carried over from package-based distro defs
-# - google-disk-expand.service: bootc-generic-growpart will handle this
 RUN systemctl disable \
     reboot.target \
-    sshd-keygen@ \
-    google-disk-expand.service
+    sshd-keygen@
 
 COPY gcp/etc/ /etc/
 
