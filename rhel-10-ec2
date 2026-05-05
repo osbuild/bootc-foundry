@@ -16,9 +16,6 @@ RUN dnf -y install \
     && dnf clean all
 
 RUN systemctl enable \
-    sshd \
-    NetworkManager \
-    chronyd \
     nm-cloud-setup.service \
     nm-cloud-setup.timer \
     cloud-init \
