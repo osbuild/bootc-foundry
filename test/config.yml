@@ -1,0 +1,65 @@
+images:
+  centos-9:
+    runner: aws/fedora-43
+    containerfiles:
+      - containerfile: stream9-qcow2
+        runner: rhos-01/fedora-43
+        image-type: qcow2
+        arches: [x86_64]
+      - containerfile: stream9-qcow2
+        image-type: qcow2
+        arches: [aarch64]
+
+  centos-10:
+    runner: aws/fedora-43
+    containerfiles:
+      - containerfile: stream10-qcow2
+        runner: rhos-01/fedora-43
+        image-type: qcow2
+        arches: [x86_64]
+      - containerfile: stream10-qcow2
+        image-type: qcow2
+        arches: [aarch64]
+      - containerfile: stream10-installer
+        runner: rhos-01/fedora-43-{arch}-large
+        image-type: bootc-generic-iso
+        payload-containerfile: stream10-qcow2
+        arches: [x86_64]
+
+  rhel-10:
+    runner: aws/fedora-43
+    subscription-needed: true
+    rh-registry-login-needed: true
+    containerfiles:
+      - containerfile: rhel-10-azure
+        image-type: vhd
+        arches: [x86_64]
+      - containerfile: rhel-10-ec2
+        image-type: ami
+        arches: [x86_64, aarch64]
+      - containerfile: rhel-10-gcp
+        image-type: gce
+        arches: [x86_64]
+      - containerfile: rhel-10-installer
+        runner: rhos-01/fedora-43-{arch}-large
+        image-type: bootc-generic-iso
+        payload-containerfile: rhel-10-qcow2
+        arches: [x86_64]
+      - containerfile: rhel-10-qcow2
+        runner: rhos-01/fedora-43
+        image-type: qcow2
+        arches: [x86_64]
+      - containerfile: rhel-10-qcow2
+        image-type: qcow2
+        arches: [aarch64]
+
+  hummingbird:
+    runner: aws/fedora-43
+    containerfiles:
+      - containerfile: hummingbird-qcow2
+        runner: rhos-01/fedora-43
+        image-type: qcow2
+        arches: [x86_64]
+      - containerfile: hummingbird-qcow2
+        image-type: qcow2
+        arches: [aarch64]
