@@ -1,1 +1,21 @@
+# vim: set ft=dockerfile:
+# -*- mode: dockerfile-mode -*-
+# code: language=dockerfile insertSpaces=true tabSize=4
+
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
+
+ARG TARGETARCH
+
+# Copy arch-specific files before dnf install
+COPY gcp-${TARGETARCH}/etc/ /etc/
+COPY gcp-${TARGETARCH}/usr/ /usr/
+
+RUN dnf -y install \
+        google-compute-engine \
+        google-osconfig-agent \
+    && dnf clean all
+
+# Copy common configuration
+COPY gcp/etc/ /etc/
+
+COPY rhel-10-gcp /root/Containerfile

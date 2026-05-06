@@ -1,0 +1,7 @@
+# org.osbuild.kernel-cmdline / org.osbuild.grub2: kernel_opts (bootc injects kargs on deploy).
+match-architectures = ["x86_64"]
+kargs = [
+    "biosdevname=0",
+    "scsi_mod.use_blk_mq=Y",
+    "console=ttyS0,38400n8d"
+]
