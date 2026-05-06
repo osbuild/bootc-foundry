@@ -6,6 +6,9 @@ ignore: |
 
 rules:
   document-start: disable
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
   line-length:
     max: 200
   truthy: disable
