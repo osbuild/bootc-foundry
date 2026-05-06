@@ -26,3 +26,16 @@ sudo "${IMAGES_DIR}/test/scripts/setup-osbuild-repo"
 
 # Install all dependencies using the images library's install script
 sudo "${IMAGES_DIR}/test/scripts/install-dependencies"
+
+# Ensure that the system is subscribed if needed
+if [ "${SUBSCRIPTION_NEEDED:-false}" = "true" ]; then
+    if [ -z "${V2_RHN_REGISTRATION_SCRIPT:-}" ]; then
+        echo "ERROR: SUBSCRIPTION_NEEDED is set but V2_RHN_REGISTRATION_SCRIPT is empty"
+        exit 1
+    fi
+
+    echo "Registering system with Red Hat Subscription Manager"
+    sudo dnf install -y subscription-manager
+    set +x
+    echo "${V2_RHN_REGISTRATION_SCRIPT}" | sudo bash
+fi

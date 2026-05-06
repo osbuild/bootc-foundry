@@ -349,6 +349,7 @@ def test_build_change_rules(tmp_path, case):
                 distro_id="rhel-10",
                 change_rules=["rhel-10-ec2", "ec2-amd64/**/*", "test/**/*", "Schutzfile"],
                 payload_name=None,
+                subscription_needed=False,
                 expected={
                     "stage": "test",
                     "extends": ".terraform",
@@ -374,6 +375,7 @@ def test_build_change_rules(tmp_path, case):
                 distro_id="rhel-10",
                 change_rules=["rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"],
                 payload_name=None,
+                subscription_needed=False,
                 expected={
                     "stage": "test",
                     "extends": ".terraform/openstack",
@@ -399,11 +401,13 @@ def test_build_change_rules(tmp_path, case):
                 distro_id="rhel-10",
                 change_rules=["rhel-10-installer", "rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"],
                 payload_name="rhel-10-qcow2",
+                subscription_needed=True,
                 expected={
                     "stage": "test",
                     "extends": ".terraform/openstack",
                     "variables": {
                         "RUNNER": "rhos-01/rhel-10.1-ga-x86_64-large",
+                        "SUBSCRIPTION_NEEDED": True,
                     },
                     "rules": [{"changes": ["rhel-10-installer", "rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"]}],
                     "script": [
@@ -427,6 +431,7 @@ def test_build_job(case):
         distro_id=case["distro_id"],
         change_rules=case["change_rules"],
         payload_cntfile_name=case["payload_name"],
+        subscription_needed=case["subscription_needed"],
     )
     assert job == case["expected"]
 

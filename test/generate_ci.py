@@ -74,7 +74,7 @@ def build_change_rules(cntfile_name, cntfile_lines, arch, payload_cntfile_name, 
     return rules
 
 
-def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rules, payload_cntfile_name):
+def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rules, payload_cntfile_name, subscription_needed):
     """Build a single CI job dictionary."""
     if "{arch}" in runner_name:
         runner = runner_name.format(arch=arch)
@@ -96,12 +96,17 @@ def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rul
     if runner_name.startswith("rhos-01/"):
         extends = ".terraform/openstack"
 
+    variables = {
+        "RUNNER": runner,
+    }
+
+    if subscription_needed:
+        variables["SUBSCRIPTION_NEEDED"] = True
+
     return {
         "stage": "test",
         "extends": extends,
-        "variables": {
-            "RUNNER": runner,
-        },
+        "variables": variables,
         "rules": [{"changes": change_rules}],
         "script": script,
     }
@@ -192,6 +197,7 @@ def generate_ci_config(config, cntfile_cache, repo_root):
                     distro_id=distro_id,
                     change_rules=change_rules,
                     payload_cntfile_name=payload_cf_name,
+                    subscription_needed=distro_info.get("subscription-needed", False),
                 )
                 job_name = f"{cf_name}-{arch}"
                 ci[job_name] = job
