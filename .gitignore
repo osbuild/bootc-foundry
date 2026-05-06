@@ -2,3 +2,4 @@
 /*.local.yaml
 github_pr_body.txt
 _images/
+build/
