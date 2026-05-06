@@ -1,8 +1,296 @@
----
 stages:
+  - init
   - test
+  - finish
 
-no-op:
-  stage: test
+init:
+  stage: init
+  interruptible: true
+  tags:
+    - shell
   script:
-    - echo "no-op"
+    - schutzbot/update_github_status.sh start
+
+finish:
+  stage: finish
+  tags:
+    - shell
+  script:
+    - schutzbot/update_github_status.sh finish
+
+fail:
+  stage: finish
+  tags:
+    - shell
+  script:
+    - schutzbot/update_github_status.sh fail
+    - exit 1
+  when: on_failure
+
+.base:
+  interruptible: true
+  variables:
+    PYTHONUNBUFFERED: '1'
+  before_script:
+    - cat schutzbot/team_ssh_keys.txt | tee -a ~/.ssh/authorized_keys > /dev/null
+    - test/setup.sh
+  after_script:
+    - schutzbot/unregister.sh || true
+
+.terraform:
+  extends: .base
+  tags:
+    - terraform
+
+.terraform/openstack:
+  extends: .base
+  tags:
+    - terraform/openstack
+
+stream9-qcow2-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-amd64/**/*
+        - stream9-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh stream9-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 centos-9
+    - test/boot.sh
+
+stream9-qcow2-aarch64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-aarch64
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-arm64/**/*
+        - stream9-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh stream9-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 centos-9
+    - test/boot.sh
+
+stream10-qcow2-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-amd64/**/*
+        - stream10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh stream10-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 centos-10
+    - test/boot.sh
+
+stream10-qcow2-aarch64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-aarch64
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-arm64/**/*
+        - stream10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh stream10-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 centos-10
+    - test/boot.sh
+
+stream10-installer-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64-large
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-amd64/**/*
+        - stream10-installer
+        - stream10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh stream10-installer)
+    - PAYLOAD_REF=$(test/get-container.sh stream10-qcow2)
+    - test/build.sh "$CONTAINER_REF" bootc-generic-iso x86_64 centos-10 "$PAYLOAD_REF"
+    - test/boot.sh
+
+rhel-10-azure-x86_64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-x86_64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - azure-amd64/**/*
+        - azure/**/*
+        - rhel-10-azure
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-azure)
+    - test/build.sh "$CONTAINER_REF" vhd x86_64 rhel-10
+    - test/boot.sh
+
+rhel-10-ec2-x86_64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-x86_64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - ec2-amd64/**/*
+        - ec2/**/*
+        - rhel-10-ec2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-ec2)
+    - test/build.sh "$CONTAINER_REF" ami x86_64 rhel-10
+    - test/boot.sh
+
+rhel-10-ec2-aarch64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-aarch64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - ec2-arm64/**/*
+        - ec2/**/*
+        - rhel-10-ec2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-ec2)
+    - test/build.sh "$CONTAINER_REF" ami aarch64 rhel-10
+    - test/boot.sh
+
+rhel-10-gcp-x86_64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-x86_64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - gcp-amd64/**/*
+        - gcp/**/*
+        - rhel-10-gcp
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-gcp)
+    - test/build.sh "$CONTAINER_REF" gce x86_64 rhel-10
+    - test/boot.sh
+
+rhel-10-installer-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64-large
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-amd64/**/*
+        - rhel-10-installer
+        - rhel-10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-installer)
+    - PAYLOAD_REF=$(test/get-container.sh rhel-10-qcow2)
+    - test/build.sh "$CONTAINER_REF" bootc-generic-iso x86_64 rhel-10 "$PAYLOAD_REF"
+    - test/boot.sh
+
+rhel-10-qcow2-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-amd64/**/*
+        - rhel-10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 rhel-10
+    - test/boot.sh
+
+rhel-10-qcow2-aarch64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-aarch64
+    SUBSCRIPTION_NEEDED: true
+    RH_REGISTRY_LOGIN_NEEDED: true
+  rules:
+    - changes:
+        - Schutzfile
+        - qcow2-arm64/**/*
+        - rhel-10-qcow2
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh rhel-10-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 rhel-10
+    - test/boot.sh
+
+hummingbird-qcow2-x86_64:
+  stage: test
+  extends: .terraform/openstack
+  variables:
+    RUNNER: rhos-01/fedora-43-x86_64
+  rules:
+    - changes:
+        - Schutzfile
+        - hummingbird-qcow2
+        - hummingbird-qcow2-amd64/**/*
+        - qcow2-amd64/**/*
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh hummingbird-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 hummingbird
+    - test/boot.sh
+
+hummingbird-qcow2-aarch64:
+  stage: test
+  extends: .terraform
+  variables:
+    RUNNER: aws/fedora-43-aarch64
+  rules:
+    - changes:
+        - Schutzfile
+        - hummingbird-qcow2
+        - hummingbird-qcow2-arm64/**/*
+        - qcow2-arm64/**/*
+        - test/**/*
+  script:
+    - CONTAINER_REF=$(test/get-container.sh hummingbird-qcow2)
+    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 hummingbird
+    - test/boot.sh
