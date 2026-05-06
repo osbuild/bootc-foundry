@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+import urllib.request
+
+IMAGES_REPO = "osbuild/images"
+SCHUTZFILE = "Schutzfile"
+
+
+def images_main_commit_id():
+    token = os.environ.get("GITHUB_TOKEN")
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{IMAGES_REPO}/commits/main"
+    )
+    req.add_header("Accept", "application/vnd.github+json")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = resp.read()
+    except urllib.error.HTTPError as http_error:
+        print(http_error)
+        sys.exit(1)
+
+    data = json.loads(body)
+    return data["sha"]
+
+
+def update_images_ref(new_ref):
+    with open(SCHUTZFILE, encoding="utf-8") as f:
+        data = json.load(f)
+
+    old_ref = data.get("common", {}).get("dependencies", {}).get("images", {}).get("ref")
+    if old_ref == new_ref:
+        return False
+
+    data["common"]["dependencies"]["images"]["ref"] = new_ref
+
+    with open(SCHUTZFILE, encoding="utf-8", mode="w") as f:
+        json.dump(data, f, indent="  ")
+        f.write("\n")
+
+    with open("github_pr_body.txt", encoding="utf-8", mode="w") as pr_body:
+        pr_body.write("Updating images library ref to current `main`\n\n")
+        pr_body.write(
+            f"Changes: https://github.com/{IMAGES_REPO}/compare/{old_ref}...{new_ref}\n"
+        )
+
+    return True
+
+
+def main():
+    commit_id = images_main_commit_id()
+    print(f"{IMAGES_REPO} main commit ID: {commit_id}")
+    if update_images_ref(commit_id):
+        print("Schutzfile updated")
+    else:
+        print("Already up to date")
+
+
+if __name__ == "__main__":
+    main()
