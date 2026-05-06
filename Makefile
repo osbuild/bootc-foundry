@@ -15,3 +15,11 @@ fmt: fmt-shell
 .PHONY: fmt-shell
 fmt-shell:
 	find . -name '*.sh' -not -path '*/.git/*' -exec shfmt -w -i 4 {} \;
+
+.PHONY: test
+test:
+	python3 -m pytest test/ -v
+
+.PHONY: generate-ci
+generate-ci:
+	python3 test/generate_ci.py > .gitlab-ci.yml
