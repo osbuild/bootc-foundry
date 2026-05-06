@@ -2,6 +2,8 @@
 """Generate .gitlab-ci.yml from test/config.yml and Containerfile COPY directives."""
 
 import re
+import sys
+import yaml
 from pathlib import Path
 
 ARCH_TO_DOCKER = {
@@ -194,3 +196,35 @@ def generate_ci_config(config, cntfile_cache, repo_root):
                 ci[job_name] = job
 
     return ci
+
+
+def main():
+    repo_root = Path(__file__).resolve().parent.parent
+
+    config_path = repo_root / "test" / "config.yml"
+    with open(config_path) as f:
+        config = yaml.safe_load(f)
+
+    containerfile_cache = {}
+    for distro_info in config["images"].values():
+        for entry in distro_info["containerfiles"]:
+            cf_name = entry["containerfile"]
+            if cf_name not in containerfile_cache:
+                containerfile_cache[cf_name] = (repo_root / cf_name).read_text().splitlines()
+            payload = entry.get("payload-containerfile")
+            if payload and payload not in containerfile_cache:
+                containerfile_cache[payload] = (repo_root / payload).read_text().splitlines()
+
+    ci = generate_ci_config(config, containerfile_cache, repo_root)
+
+    class IndentedListDumper(yaml.Dumper):
+        def increase_indent(self, flow=False, indentless=False):
+            return super().increase_indent(flow, False)
+
+    output = yaml.dump(ci, default_flow_style=False, sort_keys=False, Dumper=IndentedListDumper, indent=2)
+    output = re.sub(r"\n(?=\S)", "\n\n", output)
+    sys.stdout.write(output)
+
+
+if __name__ == "__main__":
+    main()
