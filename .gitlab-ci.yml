@@ -1,0 +1,8 @@
+---
+stages:
+  - test
+
+no-op:
+  stage: test
+  script:
+    - echo "no-op"

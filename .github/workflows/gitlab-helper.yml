@@ -1,0 +1,18 @@
+# This workflow runs on PRs and the merge queue and is responsible for starting
+# the "Start GitLab CI" workflow in a way that makes it possible to use
+# secrets. The workflow first runs source preparation to make sure that the
+# gitlab-ci.yml is up to date.
+---
+name: GitLab
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  gitlab-ci-helper:
+    name: "Gitlab CI trigger helper"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Trigger
+        run: echo "GitLab trigger complete"
