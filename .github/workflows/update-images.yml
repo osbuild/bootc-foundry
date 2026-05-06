@@ -1,0 +1,43 @@
+name: Update images library ref
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 0"
+
+jobs:
+  update-and-push:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
+    steps:
+      - name: Clone
+        run: |
+          git clone --depth=1 --branch main https://github.com/$GITHUB_REPOSITORY ./src
+
+      - name: User config
+        working-directory: ./src
+        run: |
+          git config user.name "schutzbot"
+          git config user.email "schutzbot@gmail.com"
+
+      - name: Update Schutzfile
+        working-directory: ./src
+        run: python3 test/update-schutzfile-images
+
+      - name: Open PR
+        working-directory: ./src
+        run: |
+          if git diff --exit-code; then echo "No changes"; exit 0; fi
+          branch="schutzfile-images-$(date -I)"
+          git checkout -b "${branch}"
+          git add Schutzfile
+          git commit -m "schutzfile: Update images library commit ref"
+          remote="https://oauth2:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}"
+          git push -f "${remote}" "${branch}"
+          gh pr create \
+            --title "Update images library commit ref" \
+            --body-file "github_pr_body.txt" \
+            --base "main" \
+            --head "${branch}"
