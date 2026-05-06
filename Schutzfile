@@ -1,0 +1,9 @@
+{
+  "common": {
+    "dependencies": {
+      "images": {
+        "ref": "c1fbb6ad0758cb1f13f5be6b6d45e50c140b7c2a"
+      }
+    }
+  }
+}
