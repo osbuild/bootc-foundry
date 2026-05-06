@@ -1,0 +1,20 @@
+name: Check CI config
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-ci-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Regenerate .gitlab-ci.yml
+        run: python3 test/generate_ci.py > .gitlab-ci.yml.generated
+
+      - name: Check .gitlab-ci.yml is up to date
+        run: diff -u .gitlab-ci.yml .gitlab-ci.yml.generated
