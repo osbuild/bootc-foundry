@@ -1,10 +1,21 @@
 # vim: set ft=dockerfile:
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
+#
+# To rebuild this host, run:
+#
+#   subscription-manager register && podman login registry.redhat.io
+#   podman build . -t system
+#   bootc switch --transport containers-storage localhost/system:latest
+#
+# For subsequent updates, run:
+#
+#   podman build . -t system
+#   bootc update
 
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
-ARG TARGETARCH
+ARG TARGETARCH=amd64
 
 #
 # Extra packages:
@@ -37,4 +48,8 @@ RUN systemctl enable \
     nm-cloud-setup.timer \
     temp-disk-dataloss-warning.service
 
-COPY rhel-10-azure /root/Containerfile
+# Copy sources to /root
+COPY rhel-10-azure /root/
+COPY azure/ /root/azure/
+COPY azure-${TARGETARCH}/ /root/azure-${TARGETARCH}/
+RUN ln -s /root/rhel-10-azure /root/Containerfile
