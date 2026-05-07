@@ -1,10 +1,21 @@
 # vim: set ft=dockerfile:
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
+#
+# To rebuild this host, run:
+#
+#   subscription-manager register && podman login registry.redhat.io
+#   podman build . -t system
+#   bootc switch --transport containers-storage localhost/system:latest
+#
+# For subsequent updates, run:
+#
+#   podman build . -t system
+#   bootc update
 
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
-ARG TARGETARCH
+ARG TARGETARCH=amd64
 
 #
 # Extra packages:
@@ -17,11 +28,9 @@ RUN dnf install -y \
     cloud-init \
     && dnf clean all
 
-# Copy common configuration
-#COPY qcow2/etc/ /etc/
-#COPY qcow2/usr/ /usr/
-
-# Copy architecture-specific configuration
 COPY qcow2-${TARGETARCH}/usr/ /usr/
 
-COPY rhel-10-qcow2 /root/Containerfile
+# Copy sources to /root
+COPY rhel-10-qcow2 /root/
+COPY qcow2-${TARGETARCH}/ /root/qcow2-${TARGETARCH}/
+RUN ln -s /root/rhel-10-qcow2 /root/Containerfile
