@@ -163,11 +163,12 @@ def generate_ci_config(config, cntfile_cache, repo_root):
     }
 
     for distro_id, distro_info in config["images"].items():
-        runner = distro_info["runner"]
+        distro_runner = distro_info["runner"]
         for entry in distro_info["containerfiles"]:
             cf_name = entry["containerfile"]
             image_type = entry["image-type"]
             payload_cf_name = entry.get("payload-containerfile")
+            runner = entry.get("runner", distro_runner)
 
             cf_lines = cntfile_cache[cf_name]
             payload_cf_lines = None
