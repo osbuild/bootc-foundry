@@ -39,3 +39,16 @@ if [ "${SUBSCRIPTION_NEEDED:-false}" = "true" ]; then
     set +x
     echo "${V2_RHN_REGISTRATION_SCRIPT}" | sudo bash
 fi
+
+if [ "${RH_REGISTRY_LOGIN_NEEDED:-false}" = "true" ]; then
+    if [ -z "${RH_CREDS:-}" ]; then
+        echo "ERROR: RH_REGISTRY_LOGIN_NEEDED is set but RH_CREDS is empty"
+        exit 1
+    fi
+
+    echo "Logging in to registry.redhat.io"
+    set +x
+    RH_USER="${RH_CREDS%%:*}"
+    RH_PASS="${RH_CREDS#*:}"
+    sudo podman login -u "${RH_USER}" -p "${RH_PASS}" registry.redhat.io
+fi
