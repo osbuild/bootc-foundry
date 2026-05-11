@@ -74,7 +74,7 @@ def build_change_rules(cntfile_name, cntfile_lines, arch, payload_cntfile_name, 
     return rules
 
 
-def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rules, payload_cntfile_name, subscription_needed):
+def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rules, payload_cntfile_name, subscription_needed, rh_registry_login_needed):
     """Build a single CI job dictionary."""
     if "{arch}" in runner_name:
         runner = runner_name.format(arch=arch)
@@ -102,6 +102,9 @@ def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rul
 
     if subscription_needed:
         variables["SUBSCRIPTION_NEEDED"] = True
+
+    if rh_registry_login_needed:
+        variables["RH_REGISTRY_LOGIN_NEEDED"] = True
 
     return {
         "stage": "test",
@@ -198,6 +201,7 @@ def generate_ci_config(config, cntfile_cache, repo_root):
                     change_rules=change_rules,
                     payload_cntfile_name=payload_cf_name,
                     subscription_needed=distro_info.get("subscription-needed", False),
+                    rh_registry_login_needed=distro_info.get("rh-registry-login-needed", False),
                 )
                 job_name = f"{cf_name}-{arch}"
                 ci[job_name] = job
