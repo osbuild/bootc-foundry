@@ -482,3 +482,44 @@ def test_generate_ci_config_generates_job_per_arch(tmp_path):
     ci = generate_ci_config(SINGLE_DISTRO_CONFIG, SINGLE_DISTRO_CF_CACHE, tmp_path)
     assert "stream10-qcow2-x86_64" in ci
     assert "stream10-qcow2-aarch64" in ci
+
+
+RUNNER_OVERRIDE_CONFIG = {
+    "images": {
+        "test-distro": {
+            "runner": "aws/default-runner",
+            "containerfiles": [
+                {
+                    "containerfile": "stream10-qcow2",
+                    "image-type": "qcow2",
+                    "arches": ["x86_64"],
+                },
+                {
+                    "containerfile": "stream10-installer",
+                    "image-type": "bootc-generic-iso",
+                    "payload-containerfile": "stream10-qcow2",
+                    "runner": "aws/nested-virt",
+                    "arches": ["x86_64"],
+                },
+            ],
+        },
+    },
+}
+RUNNER_OVERRIDE_CF_CACHE = {
+    "stream10-qcow2": [
+        "COPY qcow2-${TARGETARCH}/usr/ /usr/",
+        "COPY stream10-qcow2 /root/Containerfile",
+    ],
+    "stream10-installer": [
+        'COPY <<EOT /usr/lib/image-builder/bootc/iso.yaml',
+        'label: "test"',
+        "EOT",
+    ],
+}
+
+
+def test_generate_ci_config_per_containerfile_runner(tmp_path):
+    _setup_single_distro_layout(tmp_path)
+    ci = generate_ci_config(RUNNER_OVERRIDE_CONFIG, RUNNER_OVERRIDE_CF_CACHE, tmp_path)
+    assert ci["stream10-qcow2-x86_64"]["variables"]["RUNNER"] == "aws/default-runner-x86_64"
+    assert ci["stream10-installer-x86_64"]["variables"]["RUNNER"] == "aws/nested-virt-x86_64"
