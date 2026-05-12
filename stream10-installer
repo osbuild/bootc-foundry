@@ -39,7 +39,7 @@ grub2:
 EOT
 
 COPY <<EOT /usr/share/anaconda/interactive-defaults.ks
-bootc --source-imgref registry:quay.io/centos-bootc/centos-bootc:stream10 --target-imgref quay.io/centos-bootc/centos-bootc:stream10
+bootc --source-imgref containers-storage:quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/stream10-qcow2:latest
 EOT
 
 RUN echo "install:x:0:0:root:/root:/usr/libexec/anaconda/run-anaconda" >> /etc/passwd && \
