@@ -3,3 +3,5 @@
 github_pr_body.txt
 _images/
 build/
+*.pyc
+__pycache__/
