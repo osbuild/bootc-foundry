@@ -21,6 +21,7 @@ RUN dnf install -y \
     google-noto-sans-cjk-fonts \
     xorriso \
     squashfs-tools \
+    fuse-overlayfs \
     && dnf clean all
 
 RUN mkdir -p /boot/efi \
