@@ -217,6 +217,7 @@ rhel-10-installer-x86_64:
         - Schutzfile
         - installer/**/*
         - qcow2-amd64/**/*
+        - qcow2/**/*
         - rhel-10-installer
         - rhel-10-qcow2
         - test/**/*
@@ -237,6 +238,7 @@ rhel-10-qcow2-x86_64:
     - changes:
         - Schutzfile
         - qcow2-amd64/**/*
+        - qcow2/**/*
         - rhel-10-qcow2
         - test/**/*
   script:
@@ -255,6 +257,7 @@ rhel-10-qcow2-aarch64:
     - changes:
         - Schutzfile
         - qcow2-arm64/**/*
+        - qcow2/**/*
         - rhel-10-qcow2
         - test/**/*
   script:

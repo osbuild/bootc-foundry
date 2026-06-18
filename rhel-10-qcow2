@@ -28,9 +28,12 @@ RUN dnf install -y \
     cloud-init \
     && dnf clean all
 
+COPY qcow2/etc/ /etc/
+COPY qcow2/usr/ /usr/
 COPY qcow2-${TARGETARCH}/usr/ /usr/
 
 # Copy sources to /root
 COPY rhel-10-qcow2 /root/
+COPY qcow2/ /root/qcow2/
 COPY qcow2-${TARGETARCH}/ /root/qcow2-${TARGETARCH}/
 RUN ln -s /root/rhel-10-qcow2 /root/Containerfile
