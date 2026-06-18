@@ -85,10 +85,13 @@ RUN kernel=$(kernel-install list --json pretty | jq -r '.[] | select(.has_kernel
         --add "lvm" \
         "/usr/lib/modules/${kernel}/initramfs.img" "${kernel}"
 
-COPY installer/usr/ /usr/
 COPY installer/etc/ /etc/
+COPY installer/usr/ /usr/
+COPY installer-${TARGETARCH}/etc/ /etc/
+COPY installer-${TARGETARCH}/usr/ /usr/
 
 # Copy sources to /root
 COPY rhel-10-installer /root/
 COPY installer/ /root/installer/
+COPY installer-${TARGETARCH}/ /root/installer-${TARGETARCH}/
 RUN ln -s /root/rhel-10-installer /root/Containerfile
