@@ -35,6 +35,8 @@ RUN systemctl enable \
     cloud-final
 
 COPY ec2/etc/ /etc/
+COPY ec2/usr/ /usr/
+COPY ec2-${TARGETARCH}/etc/ /etc/
 COPY ec2-${TARGETARCH}/usr/ /usr/
 
 # Copy sources to /root
