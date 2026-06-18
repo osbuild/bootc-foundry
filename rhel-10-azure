@@ -35,6 +35,7 @@ COPY azure/etc/ /etc/
 COPY azure/usr/ /usr/
 
 # Copy architecture-specific configuration
+COPY azure-${TARGETARCH}/etc/ /etc/
 COPY azure-${TARGETARCH}/usr/ /usr/
 
 # Enable services after custom services are copied. Required hyperv-daemons services
