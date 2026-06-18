@@ -79,30 +79,16 @@ RUN mv /usr/share/anaconda/list-harddrives-stub /usr/bin/list-harddrives && \
 RUN rm /usr/lib/systemd/system/autovt@.service \
     && ln -s /usr/lib/systemd/system/anaconda-shell@.service /usr/lib/systemd/system/autovt@.service
 
-RUN mkdir /usr/lib/systemd/logind.conf.d
-COPY <<EOT /usr/lib/systemd/logind.conf.d/anaconda-shell.conf
-[Login]
-ReserveVT=2
-EOT
-
 RUN kernel=$(kernel-install list --json pretty | jq -r '.[] | select(.has_kernel == true) | .version') && \
     DRACUT_NO_XATTR=1 dracut --force -v --zstd --reproducible --no-hostonly \
         --add "anaconda" \
         --add "lvm" \
         "/usr/lib/modules/${kernel}/initramfs.img" "${kernel}"
 
-RUN mkdir /etc/systemd/user/pipewire.service.d/
-COPY <<EOT /etc/systemd/user/pipewire.service.d/allowroot.conf
-[Unit]
-ConditionUser=
-EOT
-
-RUN mkdir /etc/systemd/user/pipewire.socket.d/
-COPY <<EOT /etc/systemd/user/pipewire.socket.d/allowroot.conf
-[Unit]
-ConditionUser=
-EOT
+COPY installer/usr/ /usr/
+COPY installer/etc/ /etc/
 
 # Copy sources to /root
 COPY rhel-10-installer /root/
+COPY installer/ /root/installer/
 RUN ln -s /root/rhel-10-installer /root/Containerfile
