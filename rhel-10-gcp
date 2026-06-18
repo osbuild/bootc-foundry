@@ -17,6 +17,10 @@ FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
 ARG TARGETARCH=amd64
 
+# Copy common configuration
+COPY gcp/etc/ /etc/
+COPY gcp/usr/ /usr/
+
 # Copy arch-specific files before dnf install
 COPY gcp-${TARGETARCH}/etc/ /etc/
 COPY gcp-${TARGETARCH}/usr/ /usr/
@@ -25,9 +29,6 @@ RUN dnf -y install \
         google-compute-engine \
         google-osconfig-agent \
     && dnf clean all
-
-# Copy common configuration
-COPY gcp/etc/ /etc/
 
 # Copy sources to /root
 COPY rhel-10-gcp /root/
