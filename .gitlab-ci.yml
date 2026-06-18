@@ -215,6 +215,7 @@ rhel-10-installer-x86_64:
   rules:
     - changes:
         - Schutzfile
+        - installer-amd64/**/*
         - installer/**/*
         - qcow2-amd64/**/*
         - qcow2/**/*
