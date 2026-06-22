@@ -1,0 +1,53 @@
+name: Force rebuild
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Wednesday at 05:00 UTC (all US time zones asleep)
+    - cron: "0 5 * * 3"
+
+permissions:
+  contents: read
+
+jobs:
+  force-rebuild:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          token: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
+
+      - name: Configure git user
+        run: |
+          git config user.name "schutzbot"
+          git config user.email "schutzbot@gmail.com"
+
+      - name: Bump rebuild timestamp
+        id: bump
+        run: |
+          timestamp=$(python3 schutzbot/bump_rebuild_timestamp.py)
+          echo "timestamp=${timestamp}" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR
+        run: |
+          if git diff --quiet; then echo "No changes"; exit 0; fi
+          timestamp="${{ steps.bump.outputs.timestamp }}"
+          branch="force-rebuild-${timestamp}"
+          git checkout -b "${branch}"
+          git add Schutzfile
+          git commit -m "schutzfile: force rebuild ${timestamp}"
+          git push -f origin "${branch}"
+          existing_pr=$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number')
+          if [ -n "$existing_pr" ]; then
+            echo "PR #${existing_pr} already exists for branch ${branch}; skipping."
+            exit 0
+          fi
+          gh pr create \
+            --title "Force rebuild ${timestamp}" \
+            --body "Periodic forced rebuild to trigger full CI testing and Konflux pipeline rebuilds." \
+            --base "main" \
+            --head "${branch}"
