@@ -1,6 +1,6 @@
 {
   "common": {
-    "last-forced-rebuild": "000000000000",
+    "last-forced-rebuild": "202606240821",
     "dependencies": {
       "images": {
         "ref": "dac29a33b6d4b830baa6134bd9e4e7256e786d27"
