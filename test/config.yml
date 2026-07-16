@@ -26,7 +26,7 @@ images:
         payload-containerfile: stream10-qcow2
         arches: [x86_64]
 
-  rhel-10:
+  rhel-10.2:
     runner: aws/fedora-43
     subscription-needed: true
     rh-registry-login-needed: true
