@@ -58,13 +58,15 @@ To add a new Containerfile:
 ## Build pipeline
 
 Images are built in Konflux and published on `quay.io`. Repositories with RHEL
-containers are private. Currently available images:
+containers are private, to access them you need to use
+`insights_image_builder_robot_account`, or get explicit permissions for your
+account via `quay-access-management` gitops repo. Currently available images:
 
-* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-qcow2:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-qcow2)
-* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-ec2:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-ec2)
-* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-azure:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-azure)
-* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-gcp:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-gcp)
-* [quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-installer:latest](https://quay.io/repository/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-installer)
+* [rhel-10-qcow2:latest](https://quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-qcow2)
+* [rhel-10-ec2:latest](https://quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-ec2)
+* [rhel-10-azure:latest](https://quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-azure)
+* [rhel-10-gcp:latest](https://quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-gcp)
+* [rhel-10-installer:latest](https://quay.io/redhat-services-prod/insights-management-tenant/image-builder-bootc-foundry/rhel-10-installer)
 
 ## License
 
