@@ -13,6 +13,9 @@ IMAGES_DIR="${REPO_ROOT}/_images"
 BUILD_DIR="${REPO_ROOT}/build"
 CONFIG_FILE="${BUILD_DIR}/config.json"
 
+BUILD_NAME="bootc_${ARCH//-/_}_${IMAGE_TYPE//-/_}_bootc_foundry"
+BUILD_OUTPUT_DIR="${BUILD_DIR}/${BUILD_NAME}"
+
 mkdir -p "${BUILD_DIR}"
 
 # Build the config JSON. Start with the base, optionally inject the payload ref.
@@ -44,25 +47,44 @@ if [ -n "${PAYLOAD_CONTAINER_IMAGE}" ]; then
     echo "  Payload container: ${PAYLOAD_CONTAINER_IMAGE}"
 fi
 
-# Build the disk image using the images library's cmd/build.
-# Run from the images directory so Go can find the module (go.mod).
-# sudo is required because cmd/build uses 'podman mount' which needs root.
-(cd "${IMAGES_DIR}" && sudo go run ./cmd/build \
-    --bootc-ref "${CONTAINER_IMAGE}" \
-    --arch "${ARCH}" \
-    --type "${IMAGE_TYPE}" \
-    --config "${CONFIG_FILE}" \
-    --output "${BUILD_DIR}")
+# Extract blueprint for --blueprint (image-builder no longer takes --config).
+BLUEPRINT_FILE=$(mktemp --suffix=.json)
+trap 'rm -f "${BLUEPRINT_FILE}"' EXIT # Remove the temp file on exit.
+jq '.blueprint // {}' "${CONFIG_FILE}" > "${BLUEPRINT_FILE}"
 
-# sudo go run produces root-owned output; reclaim ownership so the rest of the
+mkdir -p "${BUILD_OUTPUT_DIR}"
+(
+    cd "${IMAGES_DIR}"
+    go build -o ./bin/image-builder ./cmd/image-builder
+    BUILD_ARGS=(
+        ./bin/image-builder build "${IMAGE_TYPE}"
+        --bootc-ref "${CONTAINER_IMAGE}"
+        --arch "${ARCH}"
+        --output-dir "${BUILD_OUTPUT_DIR}"
+        --output-name "${BUILD_NAME}"
+        --with-manifest
+        --ignore-warnings
+        --blueprint "${BLUEPRINT_FILE}"
+    )
+    if [ -n "${PAYLOAD_CONTAINER_IMAGE}" ]; then
+        BUILD_ARGS+=(--bootc-installer-payload-ref "${PAYLOAD_CONTAINER_IMAGE}")
+    fi
+    # sudo is required because image-builder uses podman mount / osbuild as root.
+    sudo "${BUILD_ARGS[@]}"
+)
+
+# sudo produces root-owned output; reclaim ownership so the rest of the
 # pipeline (and boot.sh) can access the artifacts without sudo.
 sudo chown -R "$(id -u):$(id -g)" "${BUILD_DIR}"
 
-# Discover the build output directory (single subdirectory under build/)
-BUILD_OUTPUT_DIR=$(find "${BUILD_DIR}" -mindepth 1 -maxdepth 1 -type d ! -name ".*" | head -1)
+OSBUILD_MANIFEST="${BUILD_OUTPUT_DIR}/${BUILD_NAME}.osbuild-manifest.json"
+MANIFEST_JSON="${BUILD_OUTPUT_DIR}/manifest.json"
+if [ -f "${OSBUILD_MANIFEST}" ] && [ ! -e "${MANIFEST_JSON}" ]; then
+    ln -s "${BUILD_NAME}.osbuild-manifest.json" "${MANIFEST_JSON}"
+fi
 
-if [ -z "${BUILD_OUTPUT_DIR}" ]; then
-    echo "ERROR: No build output directory found under ${BUILD_DIR}/"
+if [ ! -d "${BUILD_OUTPUT_DIR}" ]; then
+    echo "ERROR: No build output directory found: ${BUILD_OUTPUT_DIR}"
     exit 1
 fi
 
