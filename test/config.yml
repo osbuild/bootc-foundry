@@ -27,6 +27,8 @@ images:
         arches: [x86_64]
 
   rhel-10:
+    # versioned distro id for boot tests (image-builder describe)
+    distro-id: rhel-10.0
     runner: aws/fedora-43
     subscription-needed: true
     rh-registry-login-needed: true

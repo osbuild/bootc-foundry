@@ -533,3 +533,26 @@ def test_generate_ci_config_per_containerfile_runner(tmp_path):
     ci = generate_ci_config(RUNNER_OVERRIDE_CONFIG, RUNNER_OVERRIDE_CF_CACHE, tmp_path)
     assert ci["stream10-qcow2-x86_64"]["variables"]["RUNNER"] == "aws/default-runner-x86_64"
     assert ci["stream10-installer-x86_64"]["variables"]["RUNNER"] == "aws/nested-virt-x86_64"
+
+
+DISTRO_ID_OVERRIDE_CONFIG = {
+    "images": {
+        "rhel-10": {
+            "distro-id": "rhel-10.0",
+            "runner": "aws/fedora-43",
+            "containerfiles": [
+                {
+                    "containerfile": "stream10-qcow2",
+                    "image-type": "ami",
+                    "arches": ["aarch64"],
+                },
+            ],
+        },
+    },
+}
+
+
+def test_generate_ci_config_distro_id_override(tmp_path):
+    _setup_single_distro_layout(tmp_path)
+    ci = generate_ci_config(DISTRO_ID_OVERRIDE_CONFIG, SINGLE_DISTRO_CF_CACHE, tmp_path)
+    assert 'test/build.sh "$CONTAINER_REF" ami aarch64 rhel-10.0' in ci["stream10-qcow2-aarch64"]["script"]

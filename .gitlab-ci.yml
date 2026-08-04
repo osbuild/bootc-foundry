@@ -145,7 +145,7 @@ rhel-10-azure-x86_64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-azure)
-    - test/build.sh "$CONTAINER_REF" vhd x86_64 rhel-10
+    - test/build.sh "$CONTAINER_REF" vhd x86_64 rhel-10.0
     - test/boot.sh
 
 rhel-10-ec2-x86_64:
@@ -164,7 +164,7 @@ rhel-10-ec2-x86_64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-ec2)
-    - test/build.sh "$CONTAINER_REF" ami x86_64 rhel-10
+    - test/build.sh "$CONTAINER_REF" ami x86_64 rhel-10.0
     - test/boot.sh
 
 rhel-10-ec2-aarch64:
@@ -183,7 +183,7 @@ rhel-10-ec2-aarch64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-ec2)
-    - test/build.sh "$CONTAINER_REF" ami aarch64 rhel-10
+    - test/build.sh "$CONTAINER_REF" ami aarch64 rhel-10.0
     - test/boot.sh
 
 rhel-10-gcp-x86_64:
@@ -202,7 +202,7 @@ rhel-10-gcp-x86_64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-gcp)
-    - test/build.sh "$CONTAINER_REF" gce x86_64 rhel-10
+    - test/build.sh "$CONTAINER_REF" gce x86_64 rhel-10.0
     - test/boot.sh
 
 rhel-10-installer-x86_64:
@@ -225,7 +225,7 @@ rhel-10-installer-x86_64:
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-installer)
     - PAYLOAD_REF=$(test/get-container.sh rhel-10-qcow2)
-    - test/build.sh "$CONTAINER_REF" bootc-generic-iso x86_64 rhel-10 "$PAYLOAD_REF"
+    - test/build.sh "$CONTAINER_REF" bootc-generic-iso x86_64 rhel-10.0 "$PAYLOAD_REF"
     - test/boot.sh
 
 rhel-10-qcow2-x86_64:
@@ -244,7 +244,7 @@ rhel-10-qcow2-x86_64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-qcow2)
-    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 rhel-10
+    - test/build.sh "$CONTAINER_REF" qcow2 x86_64 rhel-10.0
     - test/boot.sh
 
 rhel-10-qcow2-aarch64:
@@ -263,7 +263,7 @@ rhel-10-qcow2-aarch64:
         - test/**/*
   script:
     - CONTAINER_REF=$(test/get-container.sh rhel-10-qcow2)
-    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 rhel-10
+    - test/build.sh "$CONTAINER_REF" qcow2 aarch64 rhel-10.0
     - test/boot.sh
 
 hummingbird-qcow2-x86_64:
