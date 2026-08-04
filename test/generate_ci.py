@@ -171,6 +171,7 @@ def generate_ci_config(config, cntfile_cache, repo_root):
     }
 
     for distro_id, distro_info in config["images"].items():
+        effective_distro_id = distro_info.get("distro-id", distro_id)
         distro_runner = distro_info["runner"]
         for entry in distro_info["containerfiles"]:
             cf_name = entry["containerfile"]
@@ -197,7 +198,7 @@ def generate_ci_config(config, cntfile_cache, repo_root):
                     image_type=image_type,
                     arch=arch,
                     runner_name=runner,
-                    distro_id=distro_id,
+                    distro_id=effective_distro_id,
                     change_rules=change_rules,
                     payload_cntfile_name=payload_cf_name,
                     subscription_needed=distro_info.get("subscription-needed", False),
