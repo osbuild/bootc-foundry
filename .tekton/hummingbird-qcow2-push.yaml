@@ -17,6 +17,8 @@ metadata:
   name: hummingbird-qcow2-on-push
   namespace: insights-management-tenant
 spec:
+  timeouts:
+    pipeline: "4h0m0s"
   params:
   - name: git-url
     value: '{{source_url}}'

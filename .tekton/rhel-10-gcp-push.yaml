@@ -17,6 +17,8 @@ metadata:
   name: rhel-10-gcp-on-push
   namespace: insights-management-tenant
 spec:
+  timeouts:
+    pipeline: "4h0m0s"
   params:
   - name: git-url
     value: '{{source_url}}'
