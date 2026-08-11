@@ -18,6 +18,8 @@ metadata:
   name: rhel-10-ec2-on-pull-request
   namespace: insights-management-tenant
 spec:
+  timeouts:
+    pipeline: "4h0m0s"
   params:
   - name: git-url
     value: '{{source_url}}'
