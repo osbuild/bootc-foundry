@@ -202,6 +202,7 @@ spec:
       - name: netrc
         workspace: netrc
     - name: build-container
+      timeout: "4h0m0s"
       params:
       - name: IMAGE
         value: $(params.output-image)
@@ -549,6 +550,12 @@ spec:
               memory: 16Gi
             limits:
               memory: 16Gi
+        - name: prepare-sboms
+          computeResources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
   workspaces:
   - name: git-auth
     secret:
