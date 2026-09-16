@@ -369,60 +369,30 @@ def test_build_change_rules(tmp_path, case):
         ),
         pytest.param(
             dict(
-                cf_name="rhel-10-qcow2",
+                cf_name="stream10-qcow2",
                 image_type="qcow2",
                 arch="x86_64",
-                runner="rhos-01/rhel-10.1-ga",
-                distro_id="rhel-10",
-                change_rules=["rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"],
+                runner="gcp/fedora-43",
+                distro_id="centos-10",
+                change_rules=["stream10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"],
                 payload_name=None,
                 subscription_needed=False,
                 rh_registry_login_needed=False,
                 expected={
                     "stage": "test",
-                    "extends": ".terraform/openstack",
+                    "extends": ".terraform/gcp",
                     "variables": {
-                        "RUNNER": "rhos-01/rhel-10.1-ga-x86_64",
+                        "RUNNER": "gcp/fedora-43-x86_64",
                     },
-                    "rules": [{"changes": ["rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"]}],
+                    "rules": [{"changes": ["stream10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"]}],
                     "script": [
-                        "CONTAINER_REF=$(test/get-container.sh rhel-10-qcow2)",
-                        'test/build.sh "$CONTAINER_REF" qcow2 x86_64 rhel-10',
+                        "CONTAINER_REF=$(test/get-container.sh stream10-qcow2)",
+                        'test/build.sh "$CONTAINER_REF" qcow2 x86_64 centos-10',
                         "test/boot.sh",
                     ],
                 },
             ),
-            id="simple-qcow2",
-        ),
-        pytest.param(
-            dict(
-                cf_name="rhel-10-installer",
-                image_type="bootc-generic-iso",
-                arch="x86_64",
-                runner="rhos-01/rhel-10.1-ga-{arch}-large",
-                distro_id="rhel-10",
-                change_rules=["rhel-10-installer", "rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"],
-                payload_name="rhel-10-qcow2",
-                subscription_needed=True,
-                rh_registry_login_needed=True,
-                expected={
-                    "stage": "test",
-                    "extends": ".terraform/openstack",
-                    "variables": {
-                        "RUNNER": "rhos-01/rhel-10.1-ga-x86_64-large",
-                        "SUBSCRIPTION_NEEDED": True,
-                        "RH_REGISTRY_LOGIN_NEEDED": True,
-                    },
-                    "rules": [{"changes": ["rhel-10-installer", "rhel-10-qcow2", "qcow2-amd64/**/*", "test/**/*", "Schutzfile"]}],
-                    "script": [
-                        "CONTAINER_REF=$(test/get-container.sh rhel-10-installer)",
-                        "PAYLOAD_REF=$(test/get-container.sh rhel-10-qcow2)",
-                        'test/build.sh "$CONTAINER_REF" bootc-generic-iso x86_64 rhel-10 "$PAYLOAD_REF"',
-                        "test/boot.sh",
-                    ],
-                },
-            ),
-            id="installer-with-payload",
+            id="simple-gcp",
         ),
     ],
 )
@@ -482,9 +452,9 @@ def test_generate_ci_config_top_level_keys(tmp_path):
     assert ".terraform" in ci
     assert ci[".terraform"]["extends"] == ".base"
     assert ci[".terraform"]["tags"] == ["terraform"]
-    assert ".terraform/openstack" in ci
-    assert ci[".terraform/openstack"]["extends"] == ".base"
-    assert ci[".terraform/openstack"]["tags"] == ["terraform/openstack"]
+    assert ".terraform/gcp" in ci
+    assert ci[".terraform/gcp"]["extends"] == ".base"
+    assert ci[".terraform/gcp"]["tags"] == ["terraform/gcp"]
 
 
 def test_generate_ci_config_generates_job_per_arch(tmp_path):

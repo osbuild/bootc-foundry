@@ -3,7 +3,7 @@ images:
     runner: aws/fedora-43
     containerfiles:
       - containerfile: stream9-qcow2
-        runner: rhos-01/fedora-43
+        runner: gcp/fedora-43
         image-type: qcow2
         arches: [x86_64]
       - containerfile: stream9-qcow2
@@ -14,14 +14,14 @@ images:
     runner: aws/fedora-43
     containerfiles:
       - containerfile: stream10-qcow2
-        runner: rhos-01/fedora-43
+        runner: gcp/fedora-43
         image-type: qcow2
         arches: [x86_64]
       - containerfile: stream10-qcow2
         image-type: qcow2
         arches: [aarch64]
       - containerfile: stream10-installer
-        runner: rhos-01/fedora-43-{arch}-large
+        runner: gcp/fedora-43
         image-type: bootc-generic-iso
         payload-containerfile: stream10-qcow2
         arches: [x86_64]
@@ -43,12 +43,12 @@ images:
         image-type: gce
         arches: [x86_64]
       - containerfile: rhel-10-installer
-        runner: rhos-01/fedora-43-{arch}-large
+        runner: gcp/fedora-43
         image-type: bootc-generic-iso
         payload-containerfile: rhel-10-qcow2
         arches: [x86_64]
       - containerfile: rhel-10-qcow2
-        runner: rhos-01/fedora-43
+        runner: gcp/fedora-43
         image-type: qcow2
         arches: [x86_64]
       - containerfile: rhel-10-qcow2
@@ -59,7 +59,7 @@ images:
     runner: aws/fedora-43
     containerfiles:
       - containerfile: hummingbird-qcow2
-        runner: rhos-01/fedora-43
+        runner: gcp/fedora-43
         image-type: qcow2
         arches: [x86_64]
       - containerfile: hummingbird-qcow2
