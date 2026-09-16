@@ -42,16 +42,16 @@ fail:
   tags:
     - terraform
 
-.terraform/openstack:
+.terraform/gcp:
   extends: .base
   tags:
-    - terraform/openstack
+    - terraform/gcp
 
 stream9-qcow2-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64
+    RUNNER: gcp/fedora-43-x86_64
   rules:
     - changes:
         - Schutzfile
@@ -81,9 +81,9 @@ stream9-qcow2-aarch64:
 
 stream10-qcow2-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64
+    RUNNER: gcp/fedora-43-x86_64
   rules:
     - changes:
         - Schutzfile
@@ -113,9 +113,9 @@ stream10-qcow2-aarch64:
 
 stream10-installer-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64-large
+    RUNNER: gcp/fedora-43-x86_64
   rules:
     - changes:
         - Schutzfile
@@ -207,9 +207,9 @@ rhel-10-gcp-x86_64:
 
 rhel-10-installer-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64-large
+    RUNNER: gcp/fedora-43-x86_64
     SUBSCRIPTION_NEEDED: true
     RH_REGISTRY_LOGIN_NEEDED: true
   rules:
@@ -230,9 +230,9 @@ rhel-10-installer-x86_64:
 
 rhel-10-qcow2-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64
+    RUNNER: gcp/fedora-43-x86_64
     SUBSCRIPTION_NEEDED: true
     RH_REGISTRY_LOGIN_NEEDED: true
   rules:
@@ -268,9 +268,9 @@ rhel-10-qcow2-aarch64:
 
 hummingbird-qcow2-x86_64:
   stage: test
-  extends: .terraform/openstack
+  extends: .terraform/gcp
   variables:
-    RUNNER: rhos-01/fedora-43-x86_64
+    RUNNER: gcp/fedora-43-x86_64
   rules:
     - changes:
         - Schutzfile
