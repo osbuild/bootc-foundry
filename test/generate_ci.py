@@ -93,8 +93,8 @@ def build_job(cntfile_name, image_type, arch, runner_name, distro_id, change_rul
     script.append("test/boot.sh")
 
     extends = ".terraform"
-    if runner_name.startswith("rhos-01/"):
-        extends = ".terraform/openstack"
+    if runner_name.startswith("gcp/"):
+        extends = ".terraform/gcp"
 
     variables = {
         "RUNNER": runner,
@@ -164,9 +164,9 @@ def generate_ci_config(config, cntfile_cache, repo_root):
             "extends": ".base",
             "tags": ["terraform"],
         },
-        ".terraform/openstack": {
+        ".terraform/gcp": {
             "extends": ".base",
-            "tags": ["terraform/openstack"],
+            "tags": ["terraform/gcp"],
         },
     }
 
