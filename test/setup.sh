@@ -1,6 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
+source /etc/os-release
+if [[ $ID == "fedora" && ${RUNNER:-} == gcp/* ]]; then
+    # Expand the root partition to use the entire 60GB disk size
+    ROOT_DEVICE=$(findmnt -n -o SOURCE /)
+    DISK=$(lsblk -n -o PKNAME "${ROOT_DEVICE}")
+    PART_NUM=$(lsblk -n -o PARTN "${ROOT_DEVICE}" | xargs)
+    sudo growpart "/dev/${DISK}" "${PART_NUM}"
+    sudo resize2fs "${ROOT_DEVICE}" || sudo xfs_growfs /
+    df -hT /
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 IMAGES_DIR="${REPO_ROOT}/_images"
