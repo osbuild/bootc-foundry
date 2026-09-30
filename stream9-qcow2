@@ -20,6 +20,10 @@ RUN dnf install -y \
 # Unlike EL10 or Fedora, EL9 doesn't have cloud-init in systemd preset, so we need to enable it manually.
 RUN systemctl enable cloud-init-local.service cloud-init.service cloud-config.service cloud-final.service
 
+# efi.automount tries to mount the EFI partition at /efi, but osbuild uses /boot/efi
+# masking efi.automount prevents a degraded boot when booted from a qcow2 image
+RUN systemctl mask efi.automount
+
 # Copy common configuration
 #COPY qcow2/etc/ /etc/
 #COPY qcow2/usr/ /usr/
