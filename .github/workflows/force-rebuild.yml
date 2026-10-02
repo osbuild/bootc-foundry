@@ -16,7 +16,7 @@ jobs:
       GH_TOKEN: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: main
           token: ${{ secrets.SCHUTZBOT_GITHUB_ACCESS_TOKEN }}
