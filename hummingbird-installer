@@ -2,9 +2,13 @@
 # -*- mode: dockerfile-mode -*-
 # code: language=dockerfile insertSpaces=true tabSize=4
 
-FROM quay.io/bootc-devel/fedora-bootc-44-standard:latest
+FROM quay.io/hummingbird-community/os-minimal:latest
 
 ARG TARGETARCH
+
+# The Hummingbird repositories do not currently contain all dependencies
+# required by cloud-init, so enable the Fedora repositories first.
+RUN dnf install -y fedora-repos
 
 # Packages needed for Anaconda; and build dependencies
 RUN dnf install -y \
@@ -13,6 +17,7 @@ RUN dnf install -y \
     anaconda-dracut \
     dracut-config-generic \
     dracut-network \
+    nfs-utils \
     net-tools \
     grub2-efi-x64-cdboot \
     plymouth \
@@ -39,11 +44,11 @@ RUN mkdir -p /boot/efi \
 RUN mkdir -p /usr/lib/image-builder/bootc
 
 COPY <<EOT /usr/lib/image-builder/bootc/iso.yaml
-label: "Fedora-44-Hummingbird-Installer"
+label: "Hummingbird-Installer"
 grub2:
   entries:
-    - name: "Install Hummingbird (Fedora 44)"
-      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-44-Hummingbird-Installer console=tty0 inst.graphical selinux=0 rhgb quiet"
+    - name: "Install Hummingbird"
+      linux: "/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Hummingbird-Installer console=tty0 inst.graphical selinux=0 rhgb quiet"
       initrd: "/images/pxeboot/initrd.img"
 EOT
 
@@ -60,8 +65,11 @@ RUN mv /usr/share/anaconda/list-harddrives-stub /usr/bin/list-harddrives && \
     ln -s /lib/systemd/system/anaconda.target /etc/systemd/system/default.target && \
     rm -v /usr/lib/systemd/system-generators/systemd-gpt-auto-generator
 
-RUN rm /usr/lib/systemd/system/autovt@.service \
-    && ln -s /usr/lib/systemd/system/anaconda-shell@.service /usr/lib/systemd/system/autovt@.service
+RUN ln -sfn /usr/lib/systemd/system/anaconda-shell@.service \
+    /usr/lib/systemd/system/autovt@.service
+
+# The installer runs from a read-only ISO without a /boot block device.
+RUN systemctl mask bootloader-update.service
 
 RUN mkdir /usr/lib/systemd/logind.conf.d
 COPY <<EOT /usr/lib/systemd/logind.conf.d/anaconda-shell.conf
