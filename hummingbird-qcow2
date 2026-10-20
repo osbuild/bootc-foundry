@@ -2,10 +2,6 @@ FROM quay.io/hummingbird-community/os-minimal:latest
 
 ARG TARGETARCH
 
-# The hummingbird repositories do not contain all dependencies for
-# cloud-init at this point in time.
-RUN dnf install -y fedora-repos
-
 RUN dnf install -y \
     cloud-init \
     && dnf clean all
