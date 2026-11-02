@@ -6,10 +6,6 @@ FROM quay.io/hummingbird-community/os-minimal:latest
 
 ARG TARGETARCH
 
-# The Hummingbird repositories do not currently contain all dependencies
-# required by cloud-init, so enable the Fedora repositories first.
-RUN dnf install -y fedora-repos
-
 # Packages needed for Anaconda; and build dependencies
 RUN dnf install -y \
     anaconda \
