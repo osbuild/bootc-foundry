@@ -61,5 +61,6 @@ if [ "${RH_REGISTRY_LOGIN_NEEDED:-false}" = "true" ]; then
     set +x
     RH_USER="${RH_CREDS%%:*}"
     RH_PASS="${RH_CREDS#*:}"
-    sudo podman login -u "${RH_USER}" -p "${RH_PASS}" registry.redhat.io
+    # Using here-string and --password-stdin not to spawn a process
+    sudo podman login -u "${RH_USER}" --password-stdin registry.redhat.io <<< "${RH_PASS}"
 fi
